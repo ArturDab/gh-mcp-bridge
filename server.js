@@ -217,7 +217,10 @@ app.get("/", (_req, res) => {
 
 app.post("/mcp", async (req, res) => {
   const auth = req.headers["authorization"] || "";
-  if (auth !== `Bearer ${MCP_AUTH_TOKEN}`) {
+  const queryKey = req.query.key || "";
+  const authorized =
+    auth === `Bearer ${MCP_AUTH_TOKEN}` || queryKey === MCP_AUTH_TOKEN;
+  if (!authorized) {
     res.status(401).json({ error: "unauthorized" });
     return;
   }
