@@ -1,9 +1,10 @@
 // gh-mcp-bridge
 //
 // Zdalny serwer MCP, ktory Claude (w rozmowie na claude.ai) laczy przez
-// Settings -> Connectors -> Add custom connector. Token GitHuba (GH_TOKEN)
-// zyje WYLACZNIE tutaj, jako zmienna srodowiskowa Railway - nigdy nie trafia
-// do kontekstu rozmowy. Claude dostaje tylko wyniki wywolan.
+// Settings -> Connectors -> Add custom connector. Token GitHuba jest generowany
+// z GitHub App (GH_APP_ID/GH_APP_PRIVATE_KEY/GH_APP_INSTALLATION_ID, swiezy,
+// auto-odswiezany) i zyje WYLACZNIE tutaj, jako zmienne srodowiskowe Railway -
+// nigdy nie trafia do kontekstu rozmowy. Claude dostaje tylko wyniki wywolan.
 //
 // Ochrona: kazde zadanie do /mcp musi miec naglowek
 //   Authorization: Bearer <MCP_AUTH_TOKEN>
@@ -14,13 +15,18 @@ import express from "express";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
+import { createAppAuth } from "@octokit/auth-app";
 
-const GH_TOKEN = process.env.GH_TOKEN;
+const GH_APP_ID = process.env.GH_APP_ID;
+const GH_APP_PRIVATE_KEY = process.env.GH_APP_PRIVATE_KEY;
+const GH_APP_INSTALLATION_ID = process.env.GH_APP_INSTALLATION_ID;
 const MCP_AUTH_TOKEN = process.env.MCP_AUTH_TOKEN;
 const PORT = process.env.PORT || 3000;
 
-if (!GH_TOKEN) {
-  console.error("BRAK GH_TOKEN w zmiennych srodowiskowych - serwer nie wystartuje.");
+if (!GH_APP_ID || !GH_APP_PRIVATE_KEY || !GH_APP_INSTALLATION_ID) {
+  console.error(
+    "BRAK GH_APP_ID/GH_APP_PRIVATE_KEY/GH_APP_INSTALLATION_ID w zmiennych srodowiskowych - serwer nie wystartuje."
+  );
   process.exit(1);
 }
 if (!MCP_AUTH_TOKEN) {
@@ -28,13 +34,34 @@ if (!MCP_AUTH_TOKEN) {
   process.exit(1);
 }
 
+// --- Token GitHub App (instalacja) - cache w pamieci do wygasniecia -----
+
+const appAuth = createAppAuth({
+  appId: GH_APP_ID,
+  privateKey: GH_APP_PRIVATE_KEY,
+  installationId: GH_APP_INSTALLATION_ID,
+});
+
+let tokenCache = null; // { token, expiresAt }
+
+async function getGithubToken() {
+  const now = Date.now();
+  if (tokenCache && new Date(tokenCache.expiresAt).getTime() - now > 5 * 60 * 1000) {
+    return tokenCache.token;
+  }
+  const { token, expiresAt } = await appAuth({ type: "installation" });
+  tokenCache = { token, expiresAt };
+  return token;
+}
+
 // --- Pomocnik do wywolan GitHub API -----------------------------------
 
 async function gh(path, options = {}) {
+  const token = await getGithubToken();
   const res = await fetch(`https://api.github.com${path}`, {
     ...options,
     headers: {
-      Authorization: `Bearer ${GH_TOKEN}`,
+      Authorization: `Bearer ${token}`,
       Accept: "application/vnd.github+json",
       "X-GitHub-Api-Version": "2022-11-28",
       "User-Agent": "gh-mcp-bridge",
