@@ -12,10 +12,17 @@
 // (sekcja "Request headers"), zeby nikt obcy nie mogl wywolywac tego serwera.
 
 import express from "express";
+import { webcrypto } from "node:crypto";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
 import { createAppAuth } from "@octokit/auth-app";
+
+// Polyfill: @modelcontextprotocol/sdk oczekuje globalThis.crypto (Web Crypto),
+// ktore na starszych wersjach Node nie jest globalne bez flagi.
+if (!globalThis.crypto) {
+  globalThis.crypto = webcrypto;
+}
 
 const GH_APP_ID = process.env.GH_APP_ID;
 const GH_APP_PRIVATE_KEY = process.env.GH_APP_PRIVATE_KEY;
