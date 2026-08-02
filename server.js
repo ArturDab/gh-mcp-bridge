@@ -237,6 +237,162 @@ function buildServer() {
     }
   );
 
+
+  server.registerTool(
+    "list_branches",
+    {
+      title: "Lista branchy",
+      description: "Listuje wszystkie branche w repo.",
+      inputSchema: {
+        repo: z.string().describe("Format 'owner/nazwa'"),
+      },
+    },
+    async ({ repo }) => {
+      const branches = [];
+      for (let page = 1; ; page += 1) {
+        const batch = await gh("/repos/" + repo + "/branches?per_page=100&page=" + page);
+        branches.push(...batch);
+        if (batch.length < 100) break;
+      }
+      return asToolResult(
+        branches.map((branch) => ({
+          name: branch.name,
+          sha: branch.commit?.sha,
+          protected: branch.protected,
+        }))
+      );
+    }
+  );
+
+  server.registerTool(
+    "delete_branch",
+    {
+      title: "Usuniecie brancha",
+      description: "Usuwa wskazany branch z repo.",
+      inputSchema: {
+        repo: z.string().describe("Format 'owner/nazwa'"),
+        branch: z.string().min(1).describe("Nazwa brancha do usuniecia"),
+      },
+    },
+    async ({ repo, branch }) => {
+      await gh("/repos/" + repo + "/git/refs/heads/" + encodeURIComponent(branch), {
+        method: "DELETE",
+      });
+      return asToolResult({ deleted: true, branch });
+    }
+  );
+
+  server.registerTool(
+    "close_pr",
+    {
+      title: "Zamkniecie pull requesta",
+      description: "Zamyka pull request bez mergowania.",
+      inputSchema: {
+        repo: z.string().describe("Format 'owner/nazwa'"),
+        pr_number: z.number().int().positive(),
+      },
+    },
+    async ({ repo, pr_number }) => {
+      const pr = await gh("/repos/" + repo + "/pulls/" + pr_number, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ state: "closed" }),
+      });
+      return asToolResult({
+        number: pr.number,
+        state: pr.state,
+        html_url: pr.html_url,
+      });
+    }
+  );
+
+  server.registerTool(
+    "get_repo",
+    {
+      title: "Ustawienia repo",
+      description: "Zwraca podstawowe informacje i ustawienia repo.",
+      inputSchema: {
+        repo: z.string().describe("Format 'owner/nazwa'"),
+      },
+    },
+    async ({ repo }) => {
+      const data = await gh("/repos/" + repo);
+      return asToolResult({
+        full_name: data.full_name,
+        name: data.name,
+        description: data.description,
+        private: data.private,
+        archived: data.archived,
+        default_branch: data.default_branch,
+        delete_branch_on_merge: data.delete_branch_on_merge,
+        html_url: data.html_url,
+      });
+    }
+  );
+
+  server.registerTool(
+    "update_repo",
+    {
+      title: "Aktualizacja ustawien repo",
+      description:
+        "Zmienia nazwe lub opis repo i moze wlaczyc albo wylaczyc automatyczne kasowanie brancha po mergu.",
+      inputSchema: {
+        repo: z.string().describe("Format 'owner/nazwa'"),
+        name: z.string().min(1).optional().describe("Nowa nazwa repo"),
+        description: z.string().optional().describe("Nowy opis repo"),
+        delete_branch_on_merge: z.boolean().optional(),
+      },
+    },
+    async ({ repo, name, description, delete_branch_on_merge }) => {
+      const body = {
+        ...(name !== undefined ? { name } : {}),
+        ...(description !== undefined ? { description } : {}),
+        ...(delete_branch_on_merge !== undefined ? { delete_branch_on_merge } : {}),
+      };
+      if (Object.keys(body).length === 0) {
+        throw new Error("Podaj co najmniej jedno ustawienie do zmiany.");
+      }
+      const data = await gh("/repos/" + repo, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      return asToolResult({
+        full_name: data.full_name,
+        name: data.name,
+        description: data.description,
+        delete_branch_on_merge: data.delete_branch_on_merge,
+        html_url: data.html_url,
+      });
+    }
+  );
+
+  server.registerTool(
+    "list_repos",
+    {
+      title: "Lista repozytoriow instalacji",
+      description: "Listuje wszystkie repo dostepne dla tej instalacji GitHub App.",
+      inputSchema: {},
+    },
+    async () => {
+      const repos = [];
+      for (let page = 1; ; page += 1) {
+        const batch = await gh("/installation/repositories?per_page=100&page=" + page);
+        repos.push(...(batch.repositories || []));
+        if ((batch.repositories || []).length < 100) break;
+      }
+      return asToolResult(
+        repos.map((repo) => ({
+          full_name: repo.full_name,
+          private: repo.private,
+          archived: repo.archived,
+          default_branch: repo.default_branch,
+          html_url: repo.html_url,
+        }))
+      );
+    }
+  );
+
   return server;
 }
 
