@@ -34,7 +34,7 @@ Trzy zmienne env:
   ustawiony w środowisku.** Kod ma fallback na losowy sekret per-proces tylko dla
   lokalnego dev; w środowisku bez `SESSION_SECRET` każdy redeploy wylogowuje wszystkich.
 
-Sesja **zwiazana z loginem**. Token to `<random>|<APP_LOGIN>.<hmac>` podpisany
+Sesja **związana z loginem**. Token to `<random>|<APP_LOGIN>.<hmac>` podpisany
 HMAC-SHA256 sekretem. Wiązanie z loginem sprawia, że zmiana/wprowadzenie `APP_LOGIN`
 unieważnia wcześniejsze ciasteczka (w tym stary format „tylko hasło" sprzed wiązania).
 Weryfikacja sygnatury przez `timingSafeEqual`.
@@ -69,7 +69,7 @@ proponował zapis. `doLogin` POST-uje JSON na `/api/auth/login`, po sukcesie zap
    Jeśli bramka oddawałaby HTML logowania na fetch danych, SPA renderuje „nie udało
    się pobrać danych / błąd ładowania" zamiast czystego ekranu logowania.
 3. `SESSION_SECRET` ustawiony w środowisku (fallback losowy jest tylko dla dev).
-4. Sesja zwiazana z `APP_LOGIN` - inaczej zmiana loginu nie unieważnia starych ciastek.
+4. Sesja związana z `APP_LOGIN` - inaczej zmiana loginu nie unieważnia starych ciastek.
 
 ## Wygląd (kanon wizualny - taki sam w każdej apce)
 
@@ -351,7 +351,7 @@ przez `before_request` ograniczone do `/api`.
 - Hardkodowanie hasła w kodzie. Zawsze zmienna env.
 - `SESSION_SECRET` nieustawiony w środowisku - losowy fallback wylogowuje wszystkich
   przy każdym deployu (zabija 90-dniowe ciasteczko).
-- Sesja niezwiazana z `APP_LOGIN` - zmiana loginu nie unieważnia starych ciastek.
+- Sesja niezwiązana z `APP_LOGIN` - zmiana loginu nie unieważnia starych ciastek.
 - Inline-HTML wall zamiast ekranu logowania we froncie apki - oddaje HTML na fetch
   danych (SPA pokazuje „błąd ładowania") i łamie jeden kanon wizualny bramki.
 - Przemalowywanie bramki na dark/motyw apki - kanon jest stały (jasny + Geist),

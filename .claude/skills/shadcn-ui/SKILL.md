@@ -66,31 +66,31 @@ Reguła nie brzmi "nigdy nie dotykaj ui/". Brzmi: "nie trać w ui/ pracy, które
 
 ## 4. Warstwa layoutu i typografii (czego styl NIE obejmuje) - konkretny standard
 Styl (luma/rhea/mira) ustawia wnętrze komponentów. Rytm layoutu i typografia treści to
-OSOBNA, wspólna warstwa. Nie przychodzi z shadcn, definiujesz ja raz i stosujesz wszedzie.
+OSOBNA, wspólna warstwa. Nie przychodzi z shadcn, definiujesz ją raz i stosujesz wszędzie.
 
-### Typografia tekstu dlugiego (edytory, artykuly, panele z trescia)
-- Renderowana tresc (podglad, artykul, opis): uzywaj @tailwindcss/typography, klasa `prose`
-  (wersja zgodna z Tailwind v4). Daje ustandaryzowane rozmiary, interlinie, ODSTEPY AKAPITOW,
-  listy, naglowki. Dostrajaj modyfikatorami (`prose-sm` itd.), nie recznie.
-- Pole edytowalne (textarea): lustrzaj DOKLADNIE ten sam rozmiar i interlinie co podglad,
-  zeby edycja i wynik wygladaly identycznie.
-- ZAKAZ arbitralnych wartosci typu `text-[15px]` dla tresci. Uzywaj skali:
-  - body tresci: 15-16px, interlinia 1.65-1.75
-  - odstep akapitu: ~0.75em miedzy akapitami (sama interlinia nie wystarczy)
-  - listy: space-y-1.5, spojne wciecie
-- Regula: jesli textarea i podglad maja inny rozmiar lub interlinie, to blad.
+### Typografia tekstu długiego (edytory, artykuły, panele z treścią)
+- Renderowana treść (podgląd, artykuł, opis): używaj @tailwindcss/typography, klasa `prose`
+  (wersja zgodna z Tailwind v4). Daje ustandaryzowane rozmiary, interlinię, ODSTĘPY AKAPITÓW,
+  listy, nagłówki. Dostrajaj modyfikatorami (`prose-sm` itd.), nie ręcznie.
+- Pole edytowalne (textarea): lustrzaj DOKŁADNIE ten sam rozmiar i interlinię co podgląd,
+  żeby edycja i wynik wyglądały identycznie.
+- ZAKAZ arbitralnych wartości typu `text-[15px]` dla treści. Używaj skali:
+  - body treści: 15-16px, interlinia 1.65-1.75
+  - odstęp akapitu: ~0.75em między akapitami (sama interlinia nie wystarczy)
+  - listy: space-y-1.5, spójne wcięcie
+- Reguła: jeśli textarea i podgląd mają inny rozmiar lub interlinię, to błąd.
 
-### Rytm layoutu (odstepy miedzy i wokol blokami)
-- Kontener: jedna szerokosc maksymalna i jeden padding strony jako tokeny, nie dobierane per ekran.
-- Odstep pionowy miedzy blokami: token `section-y` (compact 2-3rem / normal 4-5rem /
-  spacious 6-7rem). Gesty panel = compact, landing = spacious.
-- Odstep miedzy kartami w gridzie: jedna wartosc z tokenow, nie losowa per widok.
-- Regula: nie dobieraj `py-N`/`gap-N` na oko. Bierz z tokenow rytmu.
+### Rytm layoutu (odstępy między i wokół blokami)
+- Kontener: jedna szerokość maksymalna i jeden padding strony jako tokeny, nie dobierane per ekran.
+- Odstęp pionowy między blokami: token `section-y` (compact 2-3rem / normal 4-5rem /
+  spacious 6-7rem). Gęsty panel = compact, landing = spacious.
+- Odstęp między kartami w gridzie: jedna wartość z tokenów, nie losowa per widok.
+- Reguła: nie dobieraj `py-N`/`gap-N` na oko. Bierz z tokenów rytmu.
 
 ### Dlaczego to tu jest
-shadcn celowo nie rusza globalnego mnoznika odstepow, wiec rytm i typografia tresci ZAWSZE
-zostaja po stronie apki. Bez tego standardu kazdy ekran dobiera wartosci na oko (np.
-`text-[15px]`, `py-5`, `gap-5`) i wychodza nierowne odstepy mimo dobrego stylu komponentow.
+shadcn celowo nie rusza globalnego mnożnika odstępów, więc rytm i typografia treści ZAWSZE
+zostają po stronie apki. Bez tego standardu każdy ekran dobiera wartości na oko (np.
+`text-[15px]`, `py-5`, `gap-5`) i wychodzą nierówne odstępy mimo dobrego stylu komponentów.
 To NIE jest wina biblioteki - biblioteka tej warstwy nie dotyka.
 
 ## 5. Drag & drop
