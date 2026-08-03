@@ -66,6 +66,36 @@ Routing modeli (`model` we frontmatterze agenta albo przy wywołaniu):
 
 Nie pozwalaj wielu agentom równolegle dotykać tych samych plików.
 
+## Konwencje infrastruktury i nazw
+
+Te reguły obowiązują przy tworzeniu i zmianie GitHuba, Railwaya oraz instrukcji wdrożeniowych.
+
+### Gałęzie i środowiska
+
+- `main` jest jedyną gałęzią produkcyjną. Produkcja nigdy nie może wdrażać `preview`.
+- `preview` jest dozwolone wyłącznie jako stała gałąź osobnego środowiska podglądowego. Jeśli projekt korzysta z Railway PR Environments, nie twórz stałego `preview`.
+- Przed zmianą źródła produkcji porównaj gałęzie. Gdy są rozbieżne, najpierw przygotuj kontrolowany PR promujący kod do `main`.
+- Gałęzie robocze nazywaj `agent/<cel>` albo `claude/<cel>`. Usuń je po merge.
+- Nie twórz Release Please ani automatycznych release PR-ów.
+
+### Railway
+
+- Nazwa projektu: małe litery i kebab-case, zgodna z nazwą produktu, np. `content-hub`.
+- Zwykły projekt: `app` i opcjonalnie `database`.
+- Osobne node'y per środowisko: `app-preview`, `database-preview`, `app-production`, `database-production`.
+- Projekt wielousługowy: nazwy funkcjonalne, np. `web`, `api`, `worker`, `typst-renderer`, `admin-panel`, `github-bridge`, `journal`, `database`.
+- Nie używaj losowych sufiksów Railway, nazw repo ani nazw frameworków jako nazw node'ów.
+- Sufiks środowiska dodawaj tylko wtedy, gdy preview i produkcja są osobnymi node'ami w tym samym projekcie.
+- Przed utworzeniem nowej usługi sprawdź istniejącą topologię. Nie duplikuj działającej aplikacji ani bazy.
+- Zmiana nazwy node'a nie może zmieniać domen, źródła, zmiennych, wolumenów ani konfiguracji wdrożenia.
+- Każda produkcyjna aplikacja ma mieć CI, Wait for CI oraz healthcheck, o ile repo zawiera działający test i endpoint zdrowia.
+
+### Odpowiedzialność agenta
+
+- Najpierw odczytaj bieżący stan GitHuba i Railwaya, potem działaj.
+- Nie zgaduj nazwy. Dobierz ją z powyższego schematu do rzeczywistej funkcji usługi.
+- Jeśli istnieją dwie potencjalnie kanoniczne aplikacje albo rozbieżne gałęzie produkcyjne, zatrzymaj tylko tę część i przygotuj porównanie. Pozostałe bezpieczne porządki kontynuuj.
+
 ## Weryfikacja - dowód, nie deklaracja
 
 **Zasada nadrzędna: pokazuj dowód, nie twierdź, że działa.** Wynik testu, komenda i to, co zwróciła, zrzut ekranu. Artur przeczyta dowód szybciej, niż sam powtórzy weryfikację - i to działa też dla sesji, których nie oglądał.

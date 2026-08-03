@@ -1,6 +1,6 @@
 ---
 name: typography-library
-description: "Biblioteka gotowych par typograficznych (naglowek + tekst + mono) per gatunek, wylacznie z fontami majacymi ZWERYFIKOWANE polskie znaki. Celowo spoza oczywistego zestawu, zeby projekt nie wygladal jak generowany przez AI. Stosuj gdy dobierasz fonty do UI/strony, budujesz tokeny typografii, zakladasz projekt albo redesign. Trigger: typografia, fonty, dobor fontow, para fontow, naglowek, kroj, webfont, Google Fonts, Fontshare, skala tekstu."
+description: "Biblioteka gotowych par typograficznych (nagłówek + tekst + mono) per gatunek, wyłącznie z fontami mającymi ZWERYFIKOWANE polskie znaki. Celowo spoza oczywistego zestawu, żeby projekt nie wyglądał jak generowany przez AI. Stosuj gdy dobierasz fonty do UI/strony, budujesz tokeny typografii, zakładasz projekt albo redesign. Trigger: typografia, fonty, dobór fontów, para fontów, nagłówek, krój, webfont, Google Fonts, Fontshare, skala tekstu."
 metadata:
   author: artur
   version: "1.0.0"
@@ -8,16 +8,16 @@ metadata:
 
 # Biblioteka par typograficznych (32 pary, PL zweryfikowane)
 
-## Twarde reguly (kaganiec)
-- **Polskie znaki OBOWIAZKOWE i ZWERYFIKOWANE** (a c e l n o s z z). Kazdy font ponizej ma
-  potwierdzona obsluge PL (metoda weryfikacji w nawiasie przy foncie). Dodajac nowy font -
-  sprawdz, nie zakladaj.
+## Twarde reguły (kaganiec)
+- **Polskie znaki OBOWIĄZKOWE i ZWERYFIKOWANE** (ą ć ę ł ń ó ś ź ż). Każdy font poniżej ma
+  potwierdzoną obsługę PL (metoda weryfikacji w nawiasie przy foncie). Dodając nowy font -
+  sprawdź, nie zakładaj.
 - **Fraunces / Roboto / Arial / Space Grotesk: ZAKAZ** (generyczne / decyzja Artura).
-- **Inter: DOZWOLONY swiadomie**, tylko jako tekst (nie naglowek), gdy reszta pary jest wyrazista.
-  Oznaczony w parach jako "swiadomy wybor".
+- **Inter: DOZWOLONY świadomie**, tylko jako tekst (nie nagłówek), gdy reszta pary jest wyrazista.
+  Oznaczony w parach jako "świadomy wybór".
 - Licencje: OFL 1.1 (Google Fonts) i ITF Free Font License (Fontshare - darmowe komercyjnie,
-  bez odsprzedazy/redystrybucji plikow). Sprawdz przed uzyciem komercyjnym.
-- Wybierz pare po gatunku, wklej import, zmapuj na tokeny (--font-display / --font-body / --font-mono).
+  bez odsprzedaży/redystrybucji plików). Sprawdź przed użyciem komercyjnym.
+- Wybierz parę po gatunku, wklej import, zmapuj na tokeny (--font-display / --font-body / --font-mono).
 
 > **Legenda licencji:** OFL = SIL Open Font License 1.1 (darmowe, komercyjne, modyfikacja i redystrybucja dozwolone). ITF Free Font License = licencja Fontshare / Indian Type Foundry (serwis uruchomiony w 2020 r.); darmowa do użytku osobistego i komercyjnego, zakazuje odsprzedaży i redystrybucji plików fontów.
 
