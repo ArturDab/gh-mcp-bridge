@@ -1,0 +1,62 @@
+name: CCOS Stale PRs
+
+# Sprzata zapomniane pull requesty: ostrzezenie po 21 dniach bez aktywnosci,
+# zamkniecie po kolejnych 9 (razem 30), zeby stare galezie robocze nie zalegaly.
+#
+# Wyjatki bez zamykania (i bez ostrzezenia):
+#   - Release PR-y release-please (galaz release-please--branches--*)
+#   - PR-y sync CCOS (galaz chore/ccos-sync)
+#   - kazdy PR z reczna etykieta `keep-open`
+#
+# Etykieta jest nadawana automatycznie tym dwom wzorcom galezi w pierwszym jobie,
+# zeby actions/stale mogl je pominac przez exempt-pr-labels (nie rozumie nazw galezi).
+# Issue (np. raporty tygodniowe) NIE sa dotkniete - tylko PR-y.
+
+on:
+  schedule:
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  exempt-protected-branches:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Etykietuj PR-y release-please i chore/ccos-sync jako keep-open
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          gh label create keep-open --color BFD4F2 \
+            --description "Wyjatek od CCOS Stale - nie zamykaj automatycznie" 2>/dev/null || true
+
+          mapfile -t PRS < <(gh pr list --state open --json number,headRefName \
+            --jq '.[] | select(.headRefName == "chore/ccos-sync" or (.headRefName | startswith("release-please--branches--"))) | .number')
+
+          for pr in "${PRS[@]}"; do
+            gh pr edit "$pr" --add-label keep-open || true
+          done
+
+  stale:
+    needs: exempt-protected-branches
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          days-before-issue-stale: -1
+          days-before-issue-close: -1
+          days-before-pr-stale: 21
+          days-before-pr-close: 9
+          exempt-pr-labels: keep-open
+          stale-pr-label: stale
+          stale-pr-message: >
+            Ten PR nie ma aktywnosci od 21 dni. Zostanie zamkniety za 9 dni,
+            jesli nic sie nie zmieni. Etykieta `keep-open` wylacza to zamkniecie recznie.
+          close-pr-message: >
+            Zamkniete po 30 dniach bez aktywnosci (21 dni ostrzezenia + 9 dni na reakcje).
+            Galaz robocza zostaje - otworz PR ponownie, jesli praca ma wrocic.
