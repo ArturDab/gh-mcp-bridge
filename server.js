@@ -93,10 +93,22 @@ function asToolResult(data) {
   return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
 }
 
+// Nazwy branchy zawieraja ukosniki (chore/ccos-sync). W sciezkach GitHub API
+// ukosnik ma zostac ukosnikiem, wiec kodujemy segment po segmencie zamiast
+// przepuszczac calosc przez encodeURIComponent (to zamienia "/" na "%2F").
+function encodeBranchPath(branch) {
+  return branch.split("/").map(encodeURIComponent).join("/");
+}
+
+async function defaultBranchOf(repo) {
+  const info = await gh("/repos/" + repo);
+  return info.default_branch;
+}
+
 // --- Definicja serwera MCP i narzedzi -----------------------------------
 
 function buildServer() {
-  const server = new McpServer({ name: "gh-mcp-bridge", version: "1.0.0" });
+  const server = new McpServer({ name: "gh-mcp-bridge", version: "1.1.0" });
 
   server.registerTool(
     "list_prs",
@@ -158,6 +170,49 @@ function buildServer() {
   );
 
   server.registerTool(
+    "create_pr",
+    {
+      title: "Utworzenie pull requesta",
+      description:
+        "Otwiera pull request z brancha zrodlowego (head) do docelowego (base, domyslnie default branch repo). Zwraca numer i adres PR-a.",
+      inputSchema: {
+        repo: z.string().describe("Format 'owner/nazwa'"),
+        title: z.string().min(1).describe("Tytul pull requesta"),
+        head: z.string().min(1).describe("Branch zrodlowy ze zmianami, np. claude/poprawka-x"),
+        base: z
+          .string()
+          .optional()
+          .describe("Branch docelowy, domyslnie default branch repo"),
+        body: z.string().optional().describe("Opis PR-a (markdown)"),
+        draft: z.boolean().default(false).describe("Czy otworzyc jako draft"),
+      },
+    },
+    async ({ repo, title, head, base, body, draft }) => {
+      const target = base || (await defaultBranchOf(repo));
+      const pr = await gh("/repos/" + repo + "/pulls", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          head,
+          base: target,
+          draft,
+          ...(body ? { body } : {}),
+        }),
+      });
+      return asToolResult({
+        number: pr.number,
+        title: pr.title,
+        state: pr.state,
+        draft: pr.draft,
+        head: pr.head?.ref,
+        base: pr.base?.ref,
+        html_url: pr.html_url,
+      });
+    }
+  );
+
+  server.registerTool(
     "merge_pr",
     {
       title: "Merge pull requesta",
@@ -204,7 +259,7 @@ function buildServer() {
     {
       title: "Zapis/edycja pliku w repo",
       description:
-        "Tworzy albo nadpisuje plik w repo (Contents API). Jesli plik juz istnieje, sam pobiera jego sha przed nadpisaniem.",
+        "Tworzy albo nadpisuje plik w repo (Contents API). Jesli plik juz istnieje, sam pobiera jego sha przed nadpisaniem. Branch musi istniec - do zalozenia nowego uzyj create_branch.",
       inputSchema: {
         repo: z.string().describe("Format 'owner/nazwa'"),
         path: z.string().describe("Sciezka do pliku w repo"),
@@ -265,6 +320,42 @@ function buildServer() {
   );
 
   server.registerTool(
+    "create_branch",
+    {
+      title: "Utworzenie brancha",
+      description:
+        "Tworzy nowy branch z wierzcholka brancha zrodlowego (domyslnie default branch repo). Potrzebne przed put_file na nowa galaz i przed create_pr.",
+      inputSchema: {
+        repo: z.string().describe("Format 'owner/nazwa'"),
+        branch: z.string().min(1).describe("Nazwa nowego brancha, np. claude/poprawka-x"),
+        from: z
+          .string()
+          .optional()
+          .describe("Branch zrodlowy, domyslnie default branch repo"),
+      },
+    },
+    async ({ repo, branch, from }) => {
+      const source = from || (await defaultBranchOf(repo));
+      const ref = await gh("/repos/" + repo + "/git/ref/heads/" + encodeBranchPath(source));
+      const sha = ref.object?.sha;
+      if (!sha) {
+        throw new Error("Nie udalo sie odczytac sha brancha zrodlowego: " + source);
+      }
+      const created = await gh("/repos/" + repo + "/git/refs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ref: "refs/heads/" + branch, sha }),
+      });
+      return asToolResult({
+        created: true,
+        branch,
+        from: source,
+        sha: created.object?.sha || sha,
+      });
+    }
+  );
+
+  server.registerTool(
     "delete_branch",
     {
       title: "Usuniecie brancha",
@@ -275,7 +366,7 @@ function buildServer() {
       },
     },
     async ({ repo, branch }) => {
-      await gh("/repos/" + repo + "/git/refs/heads/" + encodeURIComponent(branch), {
+      await gh("/repos/" + repo + "/git/refs/heads/" + encodeBranchPath(branch), {
         method: "DELETE",
       });
       return asToolResult({ deleted: true, branch });
