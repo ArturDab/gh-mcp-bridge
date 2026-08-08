@@ -1,0 +1,34 @@
+name: Mark PR Ready (ccos)
+
+# Zdejmuje draft z PR przez GraphQL - REST pulls.update(draft:false) zwraca 405.
+# Wyzwol: mcp__github__actions_run_trigger z workflow_id="ccos-mark-pr-ready.yml"
+# i inputs={"pr_number":"123"}.
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Numer PR do oznaczenia jako ready for review'
+        required: true
+        type: string
+
+permissions:
+  pull-requests: write
+
+jobs:
+  mark-ready:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mark PR ready via GraphQL
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_ID=$(gh api "repos/${{ github.repository }}/pulls/${{ inputs.pr_number }}" --jq .node_id)
+          gh api graphql -f query='
+            mutation($id: ID!) {
+              markPullRequestReadyForReview(input: {pullRequestId: $id}) {
+                pullRequest { isDraft number }
+              }
+            }
+          ' -f id="$PR_ID"
+          echo "PR #${{ inputs.pr_number }} oznaczony jako ready for review"

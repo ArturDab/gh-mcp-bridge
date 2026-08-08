@@ -1,0 +1,63 @@
+name: CCOS Commitlint
+
+# Pilnuje, zeby commity trzymaly sie Conventional Commits - to jest paliwo dla
+# CCOS Release (release-please wylicza wersje z typow commitow).
+#
+# Dziala jako check na PR-ze, NIE jako husky/pre-commit hook: husky wymaga
+# package.json, ktorego czesc repo w ekosystemie nie ma. Ten workflow dziala
+# wszedzie, niezaleznie od stacku.
+#
+# Dozwolone typy: feat, fix, perf, refactor, docs, style, test, build, ci, chore, revert.
+# Bumpuja wersje: feat (minor), fix (patch), perf (patch). Reszta trafia do changeloga
+# albo jest ukryta, ale nie podnosi wersji.
+#
+# UWAGA: niestandardowy typ "tweak:" (uzywany wczesniej w raai) jest ODRZUCANY.
+# Uzywaj fix:, refactor: albo style: zamiast niego.
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  commitlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Konfiguracja commitlint
+        run: |
+          cat > commitlint.config.cjs <<'EOF'
+          module.exports = {
+            extends: ['@commitlint/config-conventional'],
+            rules: {
+              'type-enum': [2, 'always', [
+                'feat', 'fix', 'perf', 'refactor', 'docs',
+                'style', 'test', 'build', 'ci', 'chore', 'revert'
+              ]],
+              'subject-case': [0],
+              'header-max-length': [1, 'always', 100],
+              'body-max-line-length': [0]
+            }
+          };
+          EOF
+
+      - name: Instalacja
+        run: npm install --no-save @commitlint/cli @commitlint/config-conventional
+
+      - name: Sprawdz commity w PR-ze
+        run: |
+          npx commitlint \
+            --config commitlint.config.cjs \
+            --from "${{ github.event.pull_request.base.sha }}" \
+            --to "${{ github.event.pull_request.head.sha }}" \
+            --verbose

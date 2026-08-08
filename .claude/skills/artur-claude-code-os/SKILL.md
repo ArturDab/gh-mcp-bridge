@@ -90,6 +90,36 @@ Te reguły obowiązują przy tworzeniu i zmianie GitHuba, Railwaya oraz instrukc
 - Zmiana nazwy node'a nie może zmieniać domen, źródła, zmiennych, wolumenów ani konfiguracji wdrożenia.
 - Każda produkcyjna aplikacja ma mieć CI, Wait for CI oraz healthcheck, o ile repo zawiera działający test i endpoint zdrowia.
 
+### Koszty: preview nigdy nie płaci sam z siebie
+
+Preview ma własne klucze API. Każdy automat, który tam chodzi, wydaje prawdziwe pieniądze
+równolegle z produkcją - i nikt tego nie widzi, bo preview z definicji nikt nie ogląda.
+(Pulsar, sierpień 2026: preview i produkcja mieliły te same feedy co 30 minut przez
+tygodnie; rachunek Gemini urósł do 150 zł tygodniowo przy praktycznie zerowym użyciu.)
+
+**Twarde zasady dla każdego projektu z płatnym API:**
+
+- **Automaty (cron, harmonogram, kolejka, robota przy starcie procesu) rejestrują się
+  WYŁĄCZNIE na produkcji.** Preview, PR environment, środowisko lokalne i każde nowe
+  środowisko milczą domyślnie. Włączenie tylko przez jawną zmienną (`ENABLE_CRON=true`).
+- **Domyślna odpowiedź na pytanie „czy wolno mi zacząć samemu?" brzmi NIE.** Brama musi
+  być zbudowana tak, że nierozpoznane środowisko nie robi nic - nie odwrotnie.
+- **Ręczne wywołanie z panelu zostaje dostępne wszędzie.** Preview ma służyć do
+  oglądania zmian na żądanie, nie do bycia drugą produkcją.
+- **Robota przy starcie procesu to też automat.** Deployów bywa kilka dziennie, więc
+  „jeden przebieg na start" mnoży się przez liczbę wdrożeń.
+- **Każdy projekt wołający płatne API ma dobowy sufit wywołań**, licznik trwały (baza,
+  nie pamięć procesu - inaczej restart go zeruje, a crashloop obchodzi limit w kółko).
+  Przekroczenie: głośny wpis w logach i wstrzymanie wywołań, nigdy ciche przepuszczanie.
+- **Każda pętla przetwarzająca wsad loguje, ile pominęła**, nie tylko ile zrobiła.
+  „Przetworzono 24" wygląda identycznie przy pracy i przy zapętleniu; „przetworzono 24,
+  pominięto 0" od razu pokazuje, że dedup nie działa.
+
+**Kiedy to sprawdzasz:** przy zakładaniu środowiska preview, przy dodawaniu czegokolwiek
+na harmonogramie, przy podpinaniu płatnego API i przy każdym zgłoszeniu „coś zżera
+kredyty". W tym ostatnim przypadku pierwszym pytaniem jest „które środowiska mają klucz
+i które z nich chodzą same", a nie „co jest źle w kodzie".
+
 ### Odpowiedzialność agenta
 
 - Najpierw odczytaj bieżący stan GitHuba i Railwaya, potem działaj.
