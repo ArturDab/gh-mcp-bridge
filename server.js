@@ -17,7 +17,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
 import { createAppAuth } from "@octokit/auth-app";
-import { buildListFilesResult } from "./operations.js";
+import { buildListFilesResult, checkDeletableFile } from "./operations.js";
 
 // Polyfill: @modelcontextprotocol/sdk oczekuje globalThis.crypto (Web Crypto),
 // ktore na starszych wersjach Node nie jest globalne bez flagi.
@@ -290,6 +290,45 @@ function buildServer() {
         body: JSON.stringify(body),
       });
       return asToolResult({ commit: result.commit?.sha, path: result.content?.path });
+    }
+  );
+
+  server.registerTool(
+    "delete_file",
+    {
+      title: "Kasowanie pliku w repo",
+      description:
+        "Kasuje pojedynczy plik w repo (Contents API). Sam pobiera jego sha przed kasowaniem, nie trzeba go podawac. Nie kasuje katalogow - Contents API tego nie obsluguje, wiec podaj sciezke konkretnego pliku.",
+      inputSchema: {
+        repo: z.string().describe("Format 'owner/nazwa'"),
+        path: z.string().describe("Sciezka do pliku w repo"),
+        message: z.string().describe("Tresc commita kasujacego"),
+        branch: z.string().optional().describe("Branch docelowy, domyslnie default branch"),
+      },
+    },
+    async ({ repo, path, message, branch }) => {
+      const params = branch ? `?ref=${encodeURIComponent(branch)}` : "";
+      let existing;
+      try {
+        existing = await gh(`/repos/${repo}/contents/${path}${params}`);
+      } catch (err) {
+        if (String(err.message).includes("404")) {
+          existing = null;
+        } else {
+          throw err;
+        }
+      }
+      const sha = checkDeletableFile(path, existing);
+      const result = await gh(`/repos/${repo}/contents/${path}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message,
+          sha,
+          ...(branch ? { branch } : {}),
+        }),
+      });
+      return asToolResult({ deleted: true, path, commit: result.commit?.sha });
     }
   );
 

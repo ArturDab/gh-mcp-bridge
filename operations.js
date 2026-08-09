@@ -42,3 +42,24 @@ export function buildListFilesResult(treeData, pathPrefix) {
   }
   return result;
 }
+
+// --- delete_file -------------------------------------------------------------
+
+// existingContentsResponse to wynik GET /repos/{owner}/{repo}/contents/{path}:
+// - null, jesli server.js zlapal 404 (plik nie istnieje na tym branchu/ref)
+// - tablica, jesli sciezka wskazuje katalog (Contents API zwraca liste wpisow)
+// - obiekt z polem sha, jesli sciezka wskazuje pojedynczy plik
+// Zwraca sha pliku do uzycia w DELETE albo rzuca czytelny blad PRZED
+// jakimkolwiek wywolaniem kasujacym.
+export function checkDeletableFile(path, existingContentsResponse) {
+  if (existingContentsResponse === null) {
+    throw new Error(`Plik nie istnieje: ${path}`);
+  }
+  if (Array.isArray(existingContentsResponse)) {
+    throw new Error("Contents API nie kasuje katalogow, podaj sciezke pliku.");
+  }
+  if (!existingContentsResponse.sha) {
+    throw new Error(`Nie udalo sie odczytac sha pliku: ${path}`);
+  }
+  return existingContentsResponse.sha;
+}
