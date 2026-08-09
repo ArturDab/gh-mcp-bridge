@@ -63,3 +63,37 @@ export function checkDeletableFile(path, existingContentsResponse) {
   }
   return existingContentsResponse.sha;
 }
+
+// --- list_commits ------------------------------------------------------------
+
+// rawCommit: pojedynczy wpis z GET /repos/{owner}/{repo}/commits.
+// parents jest zawsze tablica (moze byc pusta dla pierwszego commita w repo) -
+// bez tego pola odzyskiwanie skasowanego pliku (list_commits -> get_file z
+// ref=parents[0]) nie ma z czego skorzystac.
+export function mapCommit(rawCommit) {
+  const author =
+    rawCommit.author && rawCommit.author.login
+      ? rawCommit.author.login
+      : rawCommit.commit?.author?.name || "unknown";
+  const fullMessage = rawCommit.commit?.message || "";
+  return {
+    sha: rawCommit.sha,
+    date: rawCommit.commit?.author?.date,
+    author,
+    message: fullMessage.split("\n")[0],
+    parents: (rawCommit.parents || []).map((p) => p.sha),
+  };
+}
+
+// Buduje querystring dla GET /repos/{owner}/{repo}/commits. GitHub nazywa
+// filtr po branchu/sha "sha", nie "ref" - narzedzie MCP uzywa nazwy "ref" dla
+// spojnosci z get_file/list_files, wiec mapujemy tu, a nie w server.js.
+export function buildCommitsQueryParams({ path, ref, since, until, per_page } = {}) {
+  const params = new URLSearchParams();
+  if (path) params.set("path", path);
+  if (ref) params.set("sha", ref);
+  if (since) params.set("since", since);
+  if (until) params.set("until", until);
+  params.set("per_page", String(per_page || 30));
+  return params;
+}

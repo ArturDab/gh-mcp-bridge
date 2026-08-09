@@ -17,7 +17,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
 import { createAppAuth } from "@octokit/auth-app";
-import { buildListFilesResult, checkDeletableFile } from "./operations.js";
+import { buildListFilesResult, checkDeletableFile, mapCommit, buildCommitsQueryParams } from "./operations.js";
 
 // Polyfill: @modelcontextprotocol/sdk oczekuje globalThis.crypto (Web Crypto),
 // ktore na starszych wersjach Node nie jest globalne bez flagi.
@@ -353,6 +353,28 @@ function buildServer() {
       const query = recursive ? "?recursive=1" : "";
       const treeData = await gh(`/repos/${repo}/git/trees/${encodeBranchPath(branch)}${query}`);
       return asToolResult(buildListFilesResult(treeData, path));
+    }
+  );
+
+  server.registerTool(
+    "list_commits",
+    {
+      title: "Lista commitow",
+      description:
+        "Listuje commity repo, najnowsze pierwsze. Podaj path, zeby znalezc commity dotykajace konkretnego pliku (glowny tryb uzycia). Kazdy wynik ma parents (sha rodzicow) - przy odzyskiwaniu skasowanego pliku commit z list_commits(path) jest commitem kasujacym (pliku juz w nim nie ma), a tresc lezy w jego rodzicu: get_file(ref = parents[0]).",
+      inputSchema: {
+        repo: z.string().describe("Format 'owner/nazwa'"),
+        path: z.string().optional().describe("Tylko commity dotykajace tej sciezki"),
+        ref: z.string().optional().describe("Branch albo sha startowy, domyslnie default branch"),
+        since: z.string().optional().describe("Data ISO 8601 - tylko commity po tej dacie"),
+        until: z.string().optional().describe("Data ISO 8601 - tylko commity przed ta data"),
+        per_page: z.number().int().min(1).max(100).default(30),
+      },
+    },
+    async ({ repo, path, ref, since, until, per_page }) => {
+      const params = buildCommitsQueryParams({ path, ref, since, until, per_page });
+      const commits = await gh(`/repos/${repo}/commits?${params.toString()}`);
+      return asToolResult(commits.map(mapCommit));
     }
   );
 
