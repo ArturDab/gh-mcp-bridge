@@ -372,7 +372,7 @@ function buildServer() {
     {
       title: "Lista plikow w repo",
       description:
-        "Listuje pliki i katalogi w repo (drzewo Gita), domyslnie rekurencyjnie od korzenia. Zawez parametrem path, jesli szukasz konkretnego katalogu. Jesli wynik ma truncated=true, GitHub obcial liste (repo za duze na jedno zapytanie) - zaweź zapytanie parametrem path zamiast zakladac, ze brakujacy plik nie istnieje.",
+        "Listuje pliki i katalogi w repo (drzewo Gita), domyslnie rekurencyjnie od korzenia. Zawez parametrem path, jesli szukasz konkretnego katalogu. Jesli wynik ma truncated=true, GitHub obcial liste (repo za duze na jedno zapytanie) - zawez zapytanie parametrem path zamiast zakladac, ze brakujacy plik nie istnieje.",
       inputSchema: {
         repo: z.string().describe("Format 'owner/nazwa'"),
         ref: z.string().optional().describe("Branch, tag albo sha, domyslnie default branch repo"),

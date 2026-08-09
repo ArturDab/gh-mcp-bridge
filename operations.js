@@ -1,7 +1,7 @@
 // operations.js
 //
 // Czysta logika narzedzi MCP - bez sieci, bez Express, bez tokenu GitHub App.
-// server.js woła te funkcje po tym jak sam pobierze dane z GitHub API (funkcja
+// server.js wola te funkcje po tym jak sam pobierze dane z GitHub API (funkcja
 // gh() w server.js). Rozdzielenie istnieje po to, zeby dalo sie testowac
 // ksztalt danych i regoly bez zywego polaczenia i bez uruchamiania serwera.
 
