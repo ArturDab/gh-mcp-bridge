@@ -17,6 +17,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
 import { createAppAuth } from "@octokit/auth-app";
+import { buildListFilesResult } from "./operations.js";
 
 // Polyfill: @modelcontextprotocol/sdk oczekuje globalThis.crypto (Web Crypto),
 // ktore na starszych wersjach Node nie jest globalne bez flagi.
@@ -292,6 +293,29 @@ function buildServer() {
     }
   );
 
+  server.registerTool(
+    "list_files",
+    {
+      title: "Lista plikow w repo",
+      description:
+        "Listuje pliki i katalogi w repo (drzewo Gita), domyslnie rekurencyjnie od korzenia. Zawez parametrem path, jesli szukasz konkretnego katalogu. Jesli wynik ma truncated=true, GitHub obcial liste (repo za duze na jedno zapytanie) - zaweź zapytanie parametrem path zamiast zakladac, ze brakujacy plik nie istnieje.",
+      inputSchema: {
+        repo: z.string().describe("Format 'owner/nazwa'"),
+        ref: z.string().optional().describe("Branch, tag albo sha, domyslnie default branch repo"),
+        path: z
+          .string()
+          .optional()
+          .describe("Prefiks sciezki do zawezenia wyniku po stronie serwera, np. 'src/components'"),
+        recursive: z.boolean().default(true).describe("Czy schodzic w podkatalogi"),
+      },
+    },
+    async ({ repo, ref, path, recursive }) => {
+      const branch = ref || (await defaultBranchOf(repo));
+      const query = recursive ? "?recursive=1" : "";
+      const treeData = await gh(`/repos/${repo}/git/trees/${encodeBranchPath(branch)}${query}`);
+      return asToolResult(buildListFilesResult(treeData, path));
+    }
+  );
 
   server.registerTool(
     "list_branches",
