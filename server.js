@@ -17,7 +17,14 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
 import { createAppAuth } from "@octokit/auth-app";
-import { buildListFilesResult, checkDeletableFile, mapCommit, buildCommitsQueryParams } from "./operations.js";
+import {
+  buildListFilesResult,
+  checkDeletableFile,
+  mapCommit,
+  buildCommitsQueryParams,
+  buildChecksList,
+  computeOverallStatus,
+} from "./operations.js";
 
 // Polyfill: @modelcontextprotocol/sdk oczekuje globalThis.crypto (Web Crypto),
 // ktore na starszych wersjach Node nie jest globalne bez flagi.
@@ -166,6 +173,34 @@ function buildServer() {
         head: pr.head?.ref,
         base: pr.base?.ref,
         html_url: pr.html_url,
+      });
+    }
+  );
+
+  server.registerTool(
+    "get_pr_checks",
+    {
+      title: "Stan sprawdzen CI pull requesta",
+      description:
+        "Zwraca stan check-runs i statusow commita z glowy PR-a (overall: success/failure/pending/neutral) plus liste pojedynczych sprawdzen. Przy zerowej liczbie sprawdzen overall to neutral, nigdy success - brak skonfigurowanego CI nie moze udawac zielonego swiatla. Wymaga uprawnien Checks: read i Commit statuses: read w GitHub App, inaczej zwroci 403.",
+      inputSchema: {
+        repo: z.string().describe("Format 'owner/nazwa'"),
+        pr_number: z.number().int().positive(),
+      },
+    },
+    async ({ repo, pr_number }) => {
+      const pr = await gh(`/repos/${repo}/pulls/${pr_number}`);
+      const sha = pr.head?.sha;
+      if (!sha) {
+        throw new Error(`Nie udalo sie odczytac sha glowy PR-a #${pr_number}.`);
+      }
+      const [checkRuns, commitStatus] = await Promise.all([
+        gh(`/repos/${repo}/commits/${sha}/check-runs`),
+        gh(`/repos/${repo}/commits/${sha}/status`),
+      ]);
+      return asToolResult({
+        overall: computeOverallStatus(checkRuns, commitStatus),
+        checks: buildChecksList(checkRuns, commitStatus),
       });
     }
   );

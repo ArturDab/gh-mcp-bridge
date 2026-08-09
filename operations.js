@@ -97,3 +97,59 @@ export function buildCommitsQueryParams({ path, ref, since, until, per_page } = 
   params.set("per_page", String(per_page || 30));
   return params;
 }
+
+// --- get_pr_checks -----------------------------------------------------------
+
+// Legacy Status API (GET .../status) uzywa "state": pending/success/failure/error.
+// Mapujemy je na slownik "conclusion" z Checks API, zeby oba zrodla dalo sie
+// polaczyc w jedna liste. "pending" nie ma odpowiednika w conclusion (Checks
+// API tez ma conclusion=null dopoki sprawdzenie trwa) - stad null.
+export function statusStateToConclusion(state) {
+  if (state === "success") return "success";
+  if (state === "failure" || state === "error") return "failure";
+  return null;
+}
+
+// checkRunsResponse: GET /repos/{owner}/{repo}/commits/{sha}/check-runs
+// commitStatusResponse: GET /repos/{owner}/{repo}/commits/{sha}/status
+export function buildChecksList(checkRunsResponse, commitStatusResponse) {
+  const runs = (checkRunsResponse?.check_runs || []).map((r) => ({
+    name: r.name,
+    status: r.status,
+    conclusion: r.conclusion,
+    url: r.html_url,
+  }));
+  const statuses = (commitStatusResponse?.statuses || []).map((s) => ({
+    name: s.context,
+    status: "completed",
+    conclusion: statusStateToConclusion(s.state),
+    url: s.target_url,
+  }));
+  return [...runs, ...statuses];
+}
+
+// Wyliczanie overall - zachowawczo, w tej kolejnosci:
+//   1. cokolwiek queued/in_progress (check-runs) albo pending (legacy status) -> pending
+//   2. cokolwiek ma conclusion failure/timed_out/cancelled (check-runs) albo
+//      state failure/error (legacy status) -> failure
+//   3. zero zdefiniowanych sprawdzen w obu zrodlach -> neutral, nigdy success
+// Repo bez skonfigurowanego CI nie moze udawac zielonego, bo wtedy
+// auto-scalanie dostaje falszywa zgode.
+export function computeOverallStatus(checkRunsResponse, commitStatusResponse) {
+  const runs = checkRunsResponse?.check_runs || [];
+  const statuses = commitStatusResponse?.statuses || [];
+
+  const anyPending =
+    runs.some((r) => r.status === "queued" || r.status === "in_progress") ||
+    statuses.some((s) => s.state === "pending");
+  if (anyPending) return "pending";
+
+  const anyFailure =
+    runs.some((r) => ["failure", "timed_out", "cancelled"].includes(r.conclusion)) ||
+    statuses.some((s) => s.state === "failure" || s.state === "error");
+  if (anyFailure) return "failure";
+
+  if (runs.length === 0 && statuses.length === 0) return "neutral";
+
+  return "success";
+}
