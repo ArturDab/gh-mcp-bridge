@@ -17,6 +17,14 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
 import { createAppAuth } from "@octokit/auth-app";
+import {
+  buildListFilesResult,
+  checkDeletableFile,
+  mapCommit,
+  buildCommitsQueryParams,
+  buildChecksList,
+  computeOverallStatus,
+} from "./operations.js";
 
 // Polyfill: @modelcontextprotocol/sdk oczekuje globalThis.crypto (Web Crypto),
 // ktore na starszych wersjach Node nie jest globalne bez flagi.
@@ -170,6 +178,34 @@ function buildServer() {
   );
 
   server.registerTool(
+    "get_pr_checks",
+    {
+      title: "Stan sprawdzen CI pull requesta",
+      description:
+        "Zwraca stan check-runs i statusow commita z glowy PR-a (overall: success/failure/pending/neutral) plus liste pojedynczych sprawdzen. Przy zerowej liczbie sprawdzen overall to neutral, nigdy success - brak skonfigurowanego CI nie moze udawac zielonego swiatla. Wymaga uprawnien Checks: read i Commit statuses: read w GitHub App, inaczej zwroci 403.",
+      inputSchema: {
+        repo: z.string().describe("Format 'owner/nazwa'"),
+        pr_number: z.number().int().positive(),
+      },
+    },
+    async ({ repo, pr_number }) => {
+      const pr = await gh(`/repos/${repo}/pulls/${pr_number}`);
+      const sha = pr.head?.sha;
+      if (!sha) {
+        throw new Error(`Nie udalo sie odczytac sha glowy PR-a #${pr_number}.`);
+      }
+      const [checkRuns, commitStatus] = await Promise.all([
+        gh(`/repos/${repo}/commits/${sha}/check-runs`),
+        gh(`/repos/${repo}/commits/${sha}/status`),
+      ]);
+      return asToolResult({
+        overall: computeOverallStatus(checkRuns, commitStatus),
+        checks: buildChecksList(checkRuns, commitStatus),
+      });
+    }
+  );
+
+  server.registerTool(
     "create_pr",
     {
       title: "Utworzenie pull requesta",
@@ -292,6 +328,90 @@ function buildServer() {
     }
   );
 
+  server.registerTool(
+    "delete_file",
+    {
+      title: "Kasowanie pliku w repo",
+      description:
+        "Kasuje pojedynczy plik w repo (Contents API). Sam pobiera jego sha przed kasowaniem, nie trzeba go podawac. Nie kasuje katalogow - Contents API tego nie obsluguje, wiec podaj sciezke konkretnego pliku.",
+      inputSchema: {
+        repo: z.string().describe("Format 'owner/nazwa'"),
+        path: z.string().describe("Sciezka do pliku w repo"),
+        message: z.string().describe("Tresc commita kasujacego"),
+        branch: z.string().optional().describe("Branch docelowy, domyslnie default branch"),
+      },
+    },
+    async ({ repo, path, message, branch }) => {
+      const params = branch ? `?ref=${encodeURIComponent(branch)}` : "";
+      let existing;
+      try {
+        existing = await gh(`/repos/${repo}/contents/${path}${params}`);
+      } catch (err) {
+        if (String(err.message).includes("404")) {
+          existing = null;
+        } else {
+          throw err;
+        }
+      }
+      const sha = checkDeletableFile(path, existing);
+      const result = await gh(`/repos/${repo}/contents/${path}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message,
+          sha,
+          ...(branch ? { branch } : {}),
+        }),
+      });
+      return asToolResult({ deleted: true, path, commit: result.commit?.sha });
+    }
+  );
+
+  server.registerTool(
+    "list_files",
+    {
+      title: "Lista plikow w repo",
+      description:
+        "Listuje pliki i katalogi w repo (drzewo Gita), domyslnie rekurencyjnie od korzenia. Zawez parametrem path, jesli szukasz konkretnego katalogu. Jesli wynik ma truncated=true, GitHub obcial liste (repo za duze na jedno zapytanie) - zawez zapytanie parametrem path zamiast zakladac, ze brakujacy plik nie istnieje.",
+      inputSchema: {
+        repo: z.string().describe("Format 'owner/nazwa'"),
+        ref: z.string().optional().describe("Branch, tag albo sha, domyslnie default branch repo"),
+        path: z
+          .string()
+          .optional()
+          .describe("Prefiks sciezki do zawezenia wyniku po stronie serwera, np. 'src/components'"),
+        recursive: z.boolean().default(true).describe("Czy schodzic w podkatalogi"),
+      },
+    },
+    async ({ repo, ref, path, recursive }) => {
+      const branch = ref || (await defaultBranchOf(repo));
+      const query = recursive ? "?recursive=1" : "";
+      const treeData = await gh(`/repos/${repo}/git/trees/${encodeBranchPath(branch)}${query}`);
+      return asToolResult(buildListFilesResult(treeData, path));
+    }
+  );
+
+  server.registerTool(
+    "list_commits",
+    {
+      title: "Lista commitow",
+      description:
+        "Listuje commity repo, najnowsze pierwsze. Podaj path, zeby znalezc commity dotykajace konkretnego pliku (glowny tryb uzycia). Kazdy wynik ma parents (sha rodzicow) - przy odzyskiwaniu skasowanego pliku commit z list_commits(path) jest commitem kasujacym (pliku juz w nim nie ma), a tresc lezy w jego rodzicu: get_file(ref = parents[0]).",
+      inputSchema: {
+        repo: z.string().describe("Format 'owner/nazwa'"),
+        path: z.string().optional().describe("Tylko commity dotykajace tej sciezki"),
+        ref: z.string().optional().describe("Branch albo sha startowy, domyslnie default branch"),
+        since: z.string().optional().describe("Data ISO 8601 - tylko commity po tej dacie"),
+        until: z.string().optional().describe("Data ISO 8601 - tylko commity przed ta data"),
+        per_page: z.number().int().min(1).max(100).default(30),
+      },
+    },
+    async ({ repo, path, ref, since, until, per_page }) => {
+      const params = buildCommitsQueryParams({ path, ref, since, until, per_page });
+      const commits = await gh(`/repos/${repo}/commits?${params.toString()}`);
+      return asToolResult(commits.map(mapCommit));
+    }
+  );
 
   server.registerTool(
     "list_branches",
