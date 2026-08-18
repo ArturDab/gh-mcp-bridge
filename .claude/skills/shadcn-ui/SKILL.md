@@ -116,8 +116,8 @@ To NIE jest wina biblioteki - biblioteka tej warstwy nie dotyka.
 ## 7. Responsywność (twardy wymóg)
 Każdy komponent i ekran wychodzi responsywny i sprawdzony na mobile. Cokolwiek wdrażasz na
 desktop, ma działać i wyglądać poprawnie na telefonie i tablecie. Weryfikacja: skill
-screenshot-driven-ui-review + komenda /audit-mobile. Brak sprawdzenia mobile = zadanie
-niedokończone.
+screenshot-driven-ui-review, w komendzie `/visual-check` z argumentem „mobile" dla pełnej
+listy kontrolnej. Brak sprawdzenia mobile = zadanie niedokończone.
 
 ## 8. Own library (docelowo, nie na start)
 Własne komponenty i własną bibliotekę wyłuskuj z realnych ekranów (gdy wzorzec wraca w 3+
@@ -127,9 +127,9 @@ projektach), nie buduj w próżni. Do tego czasu opieraj się na cudzych blokach
 - Przeglądanie CUDZYCH bloków: nie buduj nic, korzystaj z galerii online (shadcn, Tailark,
   Origin UI). Claude instaluje wybrane przez MCP.
 - Przeglądanie WŁASNEGO systemu (komponenty pod luma/rhea/mira, tokeny, sprawdzenie mobile):
-  Storybook albo Ladle, albo prosta podstrona `/playground` w projekcie. Nabiera sensu, gdy
+  Storybook albo Ladle, albo prosta podstrona „/playground" w projekcie. Nabiera sensu, gdy
   masz własne komponenty. Wcześniej pokazywałby to samo, co galerie bibliotek.
-- Na pilotaż wystarczy lekka podstrona `/playground` renderująca kilka bloków pod wybranym
+- Na pilotaż wystarczy lekka podstrona „/playground" renderująca kilka bloków pod wybranym
   stylem, do wglądu na desktop + mobile. Nie stawiaj Storybooka na start.
 
 ## 10. Model instalacji (nie wgrywaj na zapas)

@@ -5,7 +5,7 @@ argument-hint: "[opcjonalnie: ekran lub obszar]"
 
 # audit-ui
 
-**Tryb: `test` albo `deep`.** W `fast` odmów i odeślij.
+**Tryb: `audit` albo `build`.** W `quick` odmów i odeślij.
 
 To **nie jest** oglądanie zrzutów ekranu i mówienie „wygląda dobrze". Claude nie mierzy pikseli i nie wyłapie 4 px różnicy w odstępie. Ten audyt sprawdza rzeczy **mechanicznie sprawdzalne**, i dlatego faktycznie znajduje rozjazdy.
 

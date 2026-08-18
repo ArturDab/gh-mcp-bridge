@@ -51,6 +51,6 @@ jak monotonia na poziomie zdań.
 
 ## Konspekt
 
-Zanim napiszesz, ustal: jaki jest kąt (patrz SKILL.md, Pre-writing), jakie
+Zanim napiszesz, ustal: jakie jest ujęcie (patrz SKILL.md, Pre-writing), jakie
 2-4 sekcje niosą argument, czym otwierasz i czym zamykasz. Konspekt to nie
 spis treści - to mapa napięcia: gdzie stawiasz tezę, gdzie dowód, gdzie zwrot.

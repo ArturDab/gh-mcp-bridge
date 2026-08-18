@@ -19,7 +19,7 @@ Artur ma ogólny pomysł, rzadko finalne szczegóły. Twoim zadaniem jest wycią
 - poprawki, literówki, drobiazgi
 - zadanie, które Artur opisał precyzyjnie i którego wynik da się opisać jednym zdaniem
 - naprawa błędu (od tego jest systematic-debugging)
-- praca w trybie `fast` nad czymś, co Artur już wcześniej zaakceptował
+- praca w trybie `quick` nad czymś, co Artur już wcześniej zaakceptował
 
 Nie stosuj tego do wszystkiego. Superpowers, skąd ten wzorzec pochodzi, każe przepytywać nawet przy zmianie konfiguracji - to za dużo i Artur to wyciął.
 

@@ -10,22 +10,25 @@ To trudniejsza warstwa - wzorce strukturalne i składniowe, nie leksykalne.
 
 ## Spis treści
 
-- [Jak używać](#jak-uzywac)
-- [Warstwa podstawowa](#warstwa-podstawowa)
-  - [W1 - Reguła trzech (trikolony)](#w1---regula-trzech-trikolony)
-  - [W2 - Cyklowanie synonimów](#w2---cyklowanie-synonimow)
-  - [W3 - Nadmierne hedgowanie](#w3---nadmierne-hedgowanie)
-  - [W4 - Pompowanie ważności](#w4---pompowanie-waznosci)
-  - [W5 - Fałszywa równowaga](#w5---falszywa-rownowaga)
-  - [W6 - Generyczne metafory](#w6---generyczne-metafory)
-  - [W7 - Narrator z dystansu](#w7---narrator-z-dystansu)
-  - [W8 - Test cytatu (LinkedIn test)](#w8---test-cytatu-linkedin-test)
-  - [Formalne łączniki → naturalne](#formalne-laczniki-naturalne)
-  - [Łańcuchy "który"](#lancuchy-ktory)
-  - [Zbędne zaimki osobowe](#zbedne-zaimki-osobowe)
-  - [Konstrukcje przeciwstawne - wariant zaawansowany](#konstrukcje-przeciwstawne---wariant-zaawansowany)
-  - [Scoring (opcjonalny)](#scoring-opcjonalny)
-- [Co NIE wchodzi do tego pliku](#co-nie-wchodzi-do-tego-pliku)
+Tematy w tym pliku, w kolejności występowania (bez linków - kotwice Markdown
+z polskimi znakami są niespójne między parserami):
+
+- Jak używać
+- Warstwa podstawowa
+  - W1 - Reguła trzech (trikolony)
+  - W2 - Cyklowanie synonimów
+  - W3 - Nadmierne hedgowanie
+  - W4 - Pompowanie ważności
+  - W5 - Fałszywa równowaga
+  - W6 - Generyczne metafory
+  - W7 - Narrator z dystansu
+  - W8 - Test cytatu (LinkedIn test)
+  - Formalne łączniki → naturalne
+  - Łańcuchy "który"
+  - Zbędne zaimki osobowe
+  - Konstrukcje przeciwstawne - wariant zaawansowany
+  - Scoring (opcjonalny)
+- Co NIE wchodzi do tego pliku
 
 ## Jak używać
 
@@ -102,6 +105,10 @@ AI hedguje obsesyjnie - każde twierdzenie jest złagodzone kwalifikatorem.
 Nie jest to ostrożność - to unikanie ryzyka wbudowane w trening. Ludzie-eksperci
 stawiają tezy. AI unika tez.
 
+> To kanoniczne miejsce dla fraz hedgingowych i akapitów ramowych (ta sama
+> rampa, tylko na starcie akapitu zamiast w środku zdania). `czarna-lista.md`
+> i `zasady-jezykowe.md` tu tylko odsyłają - nie duplikuj tej listy tam.
+
 **Polskie odpowiedniki:**
 - "Warto zauważyć, że..."
 - "W pewnym sensie..."
@@ -111,6 +118,34 @@ stawiają tezy. AI unika tez.
 - "Nie bez powodu..."
 - "Z jednej strony... z drugiej strony..." (gdy nieuzasadnione rzeczywistą
   dwustronnością)
+
+**Frazy i zamienniki (tabela robocza do korekty):**
+
+| Fraza | Problem | Zamiennik |
+|---|---|---|
+| "Warto również wspomnieć, że..." | rampa przed treścią | wytnij, zacznij od treści |
+| "Nie można zapominać, że..." | hedge + rampa | "Jest jeszcze X:" albo wytnij |
+| "Jednocześnie warto podkreślić, że..." | podwójny hedge | "Jednocześnie" albo wytnij całość |
+| "Na podstawie podanych informacji" | tic konwersacyjny w tekście | "Z danych wynika" albo wytnij |
+| "Ważne jest, aby pamiętać, że..." | patronizujące + rampa | "Pamiętaj:" albo wytnij |
+| "Kolejnym ważnym aspektem jest..." | sygnał roli akapitu | zacznij od konkretu |
+| "Należy w tym miejscu zaznaczyć, że..." | akademicka rampa | wytnij, wprost |
+| "Nie bez znaczenia pozostaje fakt, że..." | podwójne zaprzeczenie + rampa | wytnij, wprost |
+| "Warto w tym kontekście podkreślić..." | rampa + hedge | wytnij, wprost |
+
+**Akapity ramowe** - ten sam mechanizm przeniesiony na start akapitu: sygnał
+roli zamiast wejścia w treść.
+- "Kolejnym ważnym aspektem jest..."
+- "Kluczową kwestią pozostaje..."
+- "Nie bez znaczenia jest fakt, że..."
+- "Innym istotnym elementem jest..."
+- "Na uwagę zasługuje również..."
+- "Warto w tym miejscu zwrócić uwagę na..."
+
+Wytnij rampę, zacznij akapit od pierwszego zdania, które niesie informację.
+
+Mikro-hedging (pojedyncze słowa-asekuracje: "niejako", "poniekąd"...) ma
+osobną, krótszą listę → `zasady-jezykowe.md`, sekcja "Mikro-hedging".
 
 **Reguła:** Postaw tezę. Jeśli nie jesteś pewien - napisz dlaczego konkretnie,
 nie hedguj mgliście.
@@ -213,7 +248,7 @@ tygodnia." Jeśli nie masz konkretu - postaw czytelnika w scenie.
 
 ## W8 - Test cytatu (LinkedIn test)
 
-**Skąd:** pisanie-pl (własna reguła, marzec 2026).
+**Skąd:** write-polish (własna reguła, marzec 2026).
 
 Zdanie brzmi jak post na LinkedIn: za gładkie, podaje uniwersalną prawdę,
 nadaje się do zacytowania out of context bez utraty sensu. Sygnał, że zdanie

@@ -26,6 +26,35 @@ logice", "wywołać burzę", "to nie X – to Y" (z kreską), "rezonuje z",
 | "wyznacza nowy standard" | dowód albo wytnij |
 | "zyskać uznanie" / "zyskać popularność" | nazwij konkret: "zdobyła popularność", "zebrała świetne recenzje", "zasłynęła z X" |
 
+## Kalki anglojęzyczne - twarde zamienniki
+
+Bezpośrednie zapożyczenia, które wyparły istniejące polskie słowa. Zamieniaj zawsze.
+
+| Zamiast | Daj |
+|---|---|
+| "kuratorowanie" (ang. *curation*) | selekcja, wybór treści |
+| "ekspertyza" (w sensie *expertise*) | wiedza, kompetencje, specjalizacja |
+| "łuk", "łuk narracyjny" (ang. *arc*) | przebieg, rozwój, historia, dramaturgia, przemiana, linia opowieści |
+| "adresować" (problem, kwestię - *address*) | rozwiązać, zająć się, odnieść się do |
+| "aplikować" (regułę, zasadę - *apply*) | stosować |
+| "bazować na" (*to be based on*) | opierać się na |
+| "dostarczać wartość" (*deliver value*) | dawać korzyść, przynosić korzyść |
+| "to robi sens" (*it makes sense*) | to ma sens |
+| "na końcu dnia" (*at the end of the day*) | ostatecznie, w gruncie rzeczy |
+| "kąt" (o tematyce tekstu - *angle*) | ujęcie, podejście, perspektywa, punkt widzenia |
+
+"Ekspertyza" po polsku znaczy opinia biegłego, orzeczenie - nie zasób wiedzy.
+"Kąt" po polsku jest geometryczny albo dosłowny (kąt pokoju); w sensie redakcyjnym
+to kalka, mimo że zadomowiona w żargonie newsroomów.
+
+### Zależne od kontekstu (nie zakaz bezwzględny)
+
+| Słowo | Zostaw, gdy | Zamień, gdy |
+|---|---|---|
+| "napięcie" | dramaturgia, suspens (napięcie w fabule, budowanie napięcia) | kalka *tension* jako zderzenie idei lub priorytetów → sprzeczność, konflikt, rozbieżność. Nie "tarcie" - po polsku brzmi sztucznie w liczbie pojedynczej |
+| "definitywnie" | ostatecznie, nieodwołalnie | kalka *definitely* → zdecydowanie, na pewno |
+| "egzekwować", "egzekucja" | sens prawny, windykacja | realizacja planu → realizować, wdrażać, realizacja |
+
 ## Kalki składniowe
 
 | Zamiast | Daj |
@@ -64,48 +93,27 @@ Test: usuń otwarcie - jeśli zdanie po nim ma sens, wytnij otwarcie.
 ## Hedgingi i zapychacze
 
 Frazy, które rozmywają twierdzenie lub zapowiadają treść zamiast ją dostarczyć.
-Wytnij całą frazę - zdanie po niej broni się samo.
-
-| Fraza | Problem | Zamiennik |
-|---|---|---|
-| "Warto również wspomnieć, że..." | rampa przed treścią | wytnij, zacznij od treści |
-| "Nie można zapominać, że..." | hedge + rampa | "Jest jeszcze X:" albo wytnij |
-| "Jednocześnie warto podkreślić, że..." | podwójny hedge | "Jednocześnie" albo wytnij całość |
-| "Na podstawie podanych informacji" | tic konwersacyjny w tekście | "Z danych wynika" albo wytnij |
-| "Ważne jest, aby pamiętać, że..." | patronizujące + rampa | "Pamiętaj:" albo wytnij |
-| "Kolejnym ważnym aspektem jest..." | sygnał roli akapitu | zacznij od konkretu |
-| "Należy w tym miejscu zaznaczyć, że..." | akademicka rampa | wytnij, wprost |
-| "Nie bez znaczenia pozostaje fakt, że..." | podwójne zaprzeczenie + rampa | wytnij, wprost |
-| "Warto w tym kontekście podkreślić..." | rampa + hedge | wytnij, wprost |
+Wytnij całą frazę - zdanie po niej broni się samo. Pełna tabela fraz i
+zamienników (w tym akapity ramowe - ta sama rampa na starcie akapitu) →
+`anti-slop.md`, sekcja "W3 - Nadmierne hedgowanie" (tam jest kanoniczna,
+tu nie duplikujemy).
 
 ## Pompowanie ważności
 
-Konstrukcje łączące konkretny fakt z "szerszym kontekstem" bez dowodu.
-Wytnij albo uzupełnij konkretnym dowodem - znaczenie musi wynikać z faktów.
-
-- "...co stanowi ważny krok w kierunku..."
-- "...wyznaczając nowy standard w branży..."
-- "...wpisuje się w szerszy trend..."
-- "...ma kluczowe znaczenie dla przyszłości..."
-- "...stanowi przełom w dziedzinie..."
-- "...co może mieć daleko idące konsekwencje..."
-- "...otwiera nowe możliwości dla..."
-- "...toruje drogę do..."
-
-Część z tych fraz pokrywa się z "antyinflacją dramatyzmu" - tu chodzi
-o wzorzec łączenia faktu z "szerszym kontekstem", nie o sam wzmacniacz.
+Konstrukcje łączące konkretny fakt z "szerszym kontekstem" bez dowodu
+("...co stanowi ważny krok w kierunku...", "...wyznaczając nowy standard
+w branży..."). Wytnij albo uzupełnij konkretnym dowodem - znaczenie musi
+wynikać z faktów. Część z tych fraz pokrywa się z "antyinflacją dramatyzmu"
+powyżej - tu chodzi o wzorzec łączenia faktu z "szerszym kontekstem", nie
+o sam wzmacniacz. Pełna lista fraz → `anti-slop.md`, sekcja "W4 - Pompowanie
+ważności" (tam jest kanoniczna, tu nie duplikujemy).
 
 ## Akapity ramowe
 
 AI zaczyna akapity sygnałem roli zamiast wejściem w treść. Wytnij rampę,
-zacznij od konkretu - pierwszego zdania, które niesie informację.
-
-- "Kolejnym ważnym aspektem jest..."
-- "Kluczową kwestią pozostaje..."
-- "Nie bez znaczenia jest fakt, że..."
-- "Innym istotnym elementem jest..."
-- "Na uwagę zasługuje również..."
-- "Warto w tym miejscu zwrócić uwagę na..."
+zacznij od konkretu - pierwszego zdania, które niesie informację. Lista fraz
+→ `anti-slop.md`, sekcja "W3 - Nadmierne hedgowanie" (tam kanoniczna, razem
+z tabelą hedgingów, z którą ten wzorzec dzieli mechanizm).
 
 ## Zakazane łączniki (max 2 w całym tekście, nigdy dwa pod rząd)
 

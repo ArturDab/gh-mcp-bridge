@@ -1,6 +1,3 @@
-> UWAGA: 6 dokumentow stanu scalono do `docs/STATE.md` (sekcje: Stan teraz, Plan / Roadmap,
-> Decyzje, Dlug techniczny, Diagnozy / Debugging, Handoff / otwarte watki). Czytaj/pisz do wlasciwej sekcji STATE.md.
-
 ---
 description: "Wyzeruj stan repo: rozjazdy od standardu, śmieci, martwy kod, mylne zapisy w docs, roadmapa"
 ---
@@ -9,7 +6,7 @@ description: "Wyzeruj stan repo: rozjazdy od standardu, śmieci, martwy kod, myl
 
 Jedna komenda do „wyzerowania stanu" przed pójściem dalej. Łączy sprzątanie z przeglądem i aktualizacją planu, żeby nie trzeba było pamiętać czterech osobnych komend.
 
-**Tryb: tylko `deep`.** Jeśli `CCOS_MODE` to `fast` lub `test`, odpowiedz jednym zdaniem, że ta komenda działa w środowisku Deep, i nie wykonuj jej.
+**Tryb: tylko `build`.** Jeśli `CCOS_MODE` to `quick` lub `audit`, odpowiedz jednym zdaniem, że ta komenda działa w środowisku Build, i nie wykonuj jej.
 
 Argument (opcjonalny): `[zawęź, np. "tylko sprzątanie", "tylko roadmapa", "pomiń martwy kod"]`
 
@@ -32,7 +29,6 @@ Repozytoria dryfują. Sprowadź je z powrotem:
 - czy skrypty `verify`, `verify:quick` istnieją i działają
 - czy blokada wartości spoza skali jest włączona (repo z frontem)
 - czy istnieją gałęzie `preview` i `main`, i czy roboczych nie zostało po merge'ach
-- czy `release-please-config.json` i manifest są na miejscu
 
 Rozbieżności napraw. Nie nadpisuj lokalnych rozwiązań, które są lepsze - zgłoś je zamiast kasować.
 
@@ -42,11 +38,13 @@ Rozbieżności napraw. Nie nadpisuj lokalnych rozwiązań, które są lepsze - z
 
 Przejdź CLAUDE.md, STATE.md, STATE.md, DEPLOYMENT.md i sprawdź **każde twierdzenie względem kodu**. Usuń wszystko, co przestało być prawdą. Zgłoś, co usunąłeś i dlaczego.
 
-## Krok 4 - sprzątanie (bezpieczne, autonomicznie)
+## Krok 4 - sprzątanie i martwy kod (bezpieczne, autonomicznie)
 
 Usuń: pliki tymczasowe, debug logi, pozostałości po eksperymentach, nieużywane importy, martwe eksporty potwierdzone przez knip, nieaktualne TODO po wykonanej pracy, osierocone gałęzie po zmergowanych PR-ach.
 
-Nie kasuj niczego bez pewności. Nie ruszaj: kodu produkcyjnego, migracji, danych, auth, sekretów, konfiguracji CI ani plików systemu (`.claude/`, hooki) - patrz guardrail megasystemu.
+Do tego martwy kod i nieużywane zależności: użyj narzędzi jeśli są (knip, depcheck, ts-prune, unimport) plus analiza. Wychwyć: nieużywane pliki i eksporty, martwe gałęzie kodu, nieużywane zależności w `package.json`, zduplikowane implementacje tego samego, zakomentowany kod bez wartości, nieużywane assety. Na pozycję: co, dowód nieużycia, ryzyko usunięcia. Usuwaj tylko przy pewności (narzędzie plus sprawdzenie referencji). Po usunięciu uruchom weryfikację (build, test), żeby potwierdzić brak regresji.
+
+Nie kasuj niczego bez pewności. Nie ruszaj: kodu produkcyjnego, migracji, danych, auth, sekretów, publicznego API, konfiguracji CI ani plików systemu (`.claude/`, hooki) - patrz guardrail megasystemu.
 
 Rzeczy niepewne wypisz jako propozycję, nie usuwaj.
 
@@ -63,7 +61,7 @@ Usuń zapisy nieaktualne i sprzeczne. Nigdy nie zapisuj zdań typu „renderu si
 
 ## Krok 6 - weryfikacja i domknięcie
 
-Lint, typecheck, test, build. Błędy z własnych porządków napraw. Niezwiązane dopisz do TECH_DEBT.
+Lint, typecheck, test, build. Błędy z własnych porządków napraw. Niezwiązane dopisz do sekcji długu technicznego w `docs/STATE.md`.
 
 Zmiany oddaj jako jeden PR na `preview` (`chore/clean`). Nie merguj na produkcję.
 

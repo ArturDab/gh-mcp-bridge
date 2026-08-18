@@ -4,6 +4,8 @@ description: "Rozwiń istniejący kanon bez rozjeżdżania"
 
 # design-evolve
 
+**Tryb: tylko `build`.** Jeśli `CCOS_MODE` jest inny, odpowiedz jednym zdaniem, że ta komenda działa w środowisku Build, i nie wykonuj jej.
+
 Zero emoji (ikony Lucide), light mode domyślnie, bez em-dash. Nie ruszaj backendu/API/auth/bazy.
 
 Dodaj, zmień lub rozszerz element obowiązującego systemu, pilnując spójności.

@@ -5,7 +5,7 @@ argument-hint: "[opcjonalnie: który ekran/URL]"
 
 # audit-speed
 
-**Tryb: `test`.** W innym odmów i odeślij.
+**Tryb: `audit`.** W innym odmów i odeślij.
 
 Mierzy, nie zgaduje. Nic nie zmienia.
 
@@ -46,4 +46,4 @@ Tabela: co, ile teraz, ile powinno być, przyczyna, poprawka, szacowany zysk.
 
 Posortowana po zysku, nie po łatwości. Na górze rzeczy, które dają najwięcej.
 
-Na końcu: **trzy rzeczy do zrobienia najpierw**, gotowe do wklejenia jako zadanie do sesji Fast.
+Na końcu: **trzy rzeczy do zrobienia najpierw**, gotowe do wklejenia jako zadanie do sesji Quick.

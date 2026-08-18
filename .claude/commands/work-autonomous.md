@@ -1,13 +1,10 @@
-> UWAGA: 6 dokumentow stanu scalono do `docs/STATE.md` (sekcje: Stan teraz, Plan / Roadmap,
-> Decyzje, Dlug techniczny, Diagnozy / Debugging, Handoff / otwarte watki). Czytaj/pisz do wlasciwej sekcji STATE.md.
-
 ---
 description: "Autonomiczny silnik dużych partii"
 ---
 
 # work-autonomous
 
-**Tryb: tylko `deep`.** Jeśli `CCOS_MODE` to `fast` lub `test`, odpowiedz jednym zdaniem, że ta komenda działa w środowisku Deep, i nie wykonuj jej. Długi autonomiczny bieg bez weryfikacji to generator regresji, których nikt nie zauważy.
+**Tryb: tylko `build`.** Jeśli `CCOS_MODE` to `quick` lub `audit`, odpowiedz jednym zdaniem, że ta komenda działa w środowisku Build, i nie wykonuj jej. Długi autonomiczny bieg bez weryfikacji to generator regresji, których nikt nie zauważy.
 
 
 PISZE KOD. Deploy tylko na PREVIEW, nigdy produkcja bez wyraźnego sygnału Artura. Twarde stopy (zgłoś, nie wykonuj): sekrety, migracje produkcyjne, infra, auth/payments.
