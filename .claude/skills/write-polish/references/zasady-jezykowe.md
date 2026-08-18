@@ -28,6 +28,11 @@ przebuduj co trzecie.
 **Konkret zamiast superlatywu.** "Ogromny wzrost" → "wzrost o 340%".
 "Bardzo szybko" → "w dwa dni".
 
+**Ostatnie zdanie akapitu.** Fakt, konkret lub wartość. Bez sentymentu.
+
+**Wyrażenia-widma.** Test: czy polski dziennikarz napisałby to? Jeśli wątpisz -
+przeformułuj prościej.
+
 **Ton akademicki.** Akapity zbyt opisowe, encyklopedyczne, bez punktu widzenia.
 Powyżej 6 zdań - skróć.
 
@@ -91,11 +96,14 @@ zamiast pięciu, przy zerze twardo zakazanych kształtów.
 
 ## Mikro-hedging
 
-Tnij asekuracyjne wtręty, które rozmywają twierdzenie: "niejako", "w pewnym
-sensie", "poniekąd", "jakby" (nie jako metafora), "można powiedzieć, że",
-"w jakimś stopniu", "właściwie" (jako hedging), "nieco" przy poważnym zjawisku.
+Tnij asekuracyjne wtręty na poziomie pojedynczego słowa, nie całej frazy:
+"niejako", "poniekąd", "jakby" (nie jako metafora), "w jakimś stopniu",
+"właściwie" (jako hedging), "nieco" przy poważnym zjawisku.
 
-Albo coś twierdzisz, albo nie. Mikro-hedging to unik.
+Albo coś twierdzisz, albo nie. Mikro-hedging to unik. Frazy hedgingowe na
+poziomie całego zdania lub akapitu ("Warto zauważyć, że...", "Można
+powiedzieć, że...") i akapity ramowe mają własną, pełniejszą listę →
+`anti-slop.md`, sekcja "W3 - Nadmierne hedgowanie".
 
 ## Personifikacja produktów
 

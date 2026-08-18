@@ -4,7 +4,7 @@ description: "Przegląd wizualny szablonów"
 
 # wp-render
 
-**Tryb: tylko `test`.** Jeśli `CCOS_MODE` jest inny, odpowiedz jednym zdaniem, że ta komenda działa w środowisku Test, i nie wykonuj jej.
+**Tryb: tylko `audit`.** Jeśli `CCOS_MODE` jest inny, odpowiedz jednym zdaniem, że ta komenda działa w środowisku Audit, i nie wykonuj jej.
 
 
 WordPress na lokalnym Playground. Read-only, nie zmieniaj kodu.

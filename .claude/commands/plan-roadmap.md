@@ -1,13 +1,10 @@
-> UWAGA: 6 dokumentow stanu scalono do `docs/STATE.md` (sekcje: Stan teraz, Plan / Roadmap,
-> Decyzje, Dlug techniczny, Diagnozy / Debugging, Handoff / otwarte watki). Czytaj/pisz do wlasciwej sekcji STATE.md.
-
 ---
 description: "Odśwież plan wg realnego stanu"
 ---
 
 # plan-roadmap
 
-**Tryb: tylko `deep`.** Jeśli `CCOS_MODE` jest inny, odpowiedz jednym zdaniem, że ta komenda działa w środowisku Deep, i nie wykonuj jej.
+**Tryb: tylko `build`.** Jeśli `CCOS_MODE` jest inny, odpowiedz jednym zdaniem, że ta komenda działa w środowisku Build, i nie wykonuj jej.
 
 
 Myślenie produktowe, NIE zmieniaj kodu.

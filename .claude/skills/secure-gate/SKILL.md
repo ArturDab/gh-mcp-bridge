@@ -48,7 +48,7 @@ Endpointy auth są **JSON-owe**, nie form-encoded inline:
 - `POST /api/auth/login` z `{username, password}` (JSON) -> ustawia ciasteczko.
 - `POST /api/auth/logout` -> czyści ciasteczko.
 
-`authMiddleware` pilnuje **tylko `/api`** (dane). Statyki i powłoka HTML lecą wolno -
+`authMiddleware` pilnuje **tylko `/api/*`** (dane). Statyki i powłoka HTML lecą wolno -
 front sam pyta `/api/auth/check` i pokazuje swój ekran logowania, gdy dostanie 401.
 
 Ekran logowania **żyje we froncie aplikacji**: ukryta nakładka pokazywana, gdy
@@ -61,7 +61,7 @@ proponował zapis. `doLogin` POST-uje JSON na `/api/auth/login`, po sukcesie zap
 
 1. NIGDY nie bramkuj healthchecka. Railway pinguje `healthcheckPath`. Jeśli bramka
    odpowie mu 401, healthcheck nigdy nie przejdzie i deploy jest FAILED, choć apka
-   działa. Bramkujesz tylko `/api`, więc statyczny healthcheck (np. `/`) jest wolny;
+   działa. Bramkujesz tylko `/api/*`, więc statyczny healthcheck (np. `/`) jest wolny;
    jeśli healthcheck celuje w `/api/...`, wyłącz tę ścieżkę z bramki.
 2. Ekran logowania = front aplikacji, w stałym kanonie wizualnym (jasny, Geist) -
    nie inline-HTML wall. Bramka oddaje czyste `401 JSON` na fetch/XHR, a front
@@ -292,7 +292,7 @@ i healthchecka.
 
 Te same trzy zmienne env, ten sam token `<random>|<login>.<hmac>`, te same JSON-owe
 endpointy `/api/auth/{check,login,logout}`, to samo ciasteczko `app_session`
-(`HttpOnly; SameSite=Strict; Max-Age=7776000`). Guard na `/api`, ekran logowania w
+(`HttpOnly; SameSite=Strict; Max-Age=7776000`). Guard na `/api/*`, ekran logowania w
 szablonie/froncie aplikacji.
 
 ```python
@@ -329,21 +329,22 @@ def check(u: str, p: str) -> bool:
 
 FastAPI: `GET /api/auth/check`, `POST /api/auth/login` (Pydantic body `{username,password}`,
 na sukces `response.set_cookie(COOKIE, mint(), max_age=MAXAGE, httponly=True, samesite="strict", path="/")`),
-`POST /api/auth/logout`. Guard `/api` zależnością/middleware: 401 JSON gdy `PW` i
+`POST /api/auth/logout`. Guard `/api/*` zależnością/middleware: 401 JSON gdy `PW` i
 `not valid(cookie)`, z wyłączeniem `/api/auth/*` i healthchecka. Flask: analogicznie
-przez `before_request` ograniczone do `/api`.
+przez `before_request` ograniczone do `/api/*`.
 
 ## Checklist wdrożenia (per apka)
 
 1. Wykryj stack (Express / Next / FastAPI / Flask). Dodaj backend wg kontraktu
-   (3 zmienne env, token zwiazany z loginem, JSON `/api/auth/*`, guard tylko na `/api`).
+   (3 zmienne env, token zwiazany z loginem, JSON `/api/auth/*`, guard tylko na `/api/*`).
 2. Dodaj ekran logowania do frontu aplikacji w kanonie wizualnym (markup + style +
    `doLogin` + `initApp`). Ten sam clean wygląd w każdej apce; pola w prawdziwym
    `<form>` z `autocomplete`, sugestia zapisu w Chrome, ciasteczko na 90 dni.
 3. Ustaw `SESSION_SECRET` na stałą mocną wartość w docelowym środowisku.
-4. Deploy. Potwierdź, że healthcheck przechodzi (bramka pilnuje tylko `/api`).
+4. Deploy. Potwierdź, że healthcheck przechodzi (bramka pilnuje tylko `/api/*`).
 5. Ustaw `APP_PASSWORD`, żeby schować; sprawdź login + zapis hasła w Chrome + że apka
-   ładuje się po wpisaniu hasła. Odpal `/audit-tester` na zabramkowanym preview.
+   ładuje się po wpisaniu hasła. Przejdź ręcznie pełny przepływ na zabramkowanym
+   preview, jak realny użytkownik.
 6. Publikacja później: usuń `APP_PASSWORD` z danego środowiska i zredeployuj.
 
 ## Anty-wzorce
@@ -356,5 +357,5 @@ przez `before_request` ograniczone do `/api`.
   danych (SPA pokazuje „błąd ładowania") i łamie jeden kanon wizualny bramki.
 - Przemalowywanie bramki na dark/motyw apki - kanon jest stały (jasny + Geist),
   żeby ekran logowania był identyczny wszędzie.
-- Bramkowanie healthchecka albo całej apki zamiast samego `/api` - psuje deploy.
+- Bramkowanie healthchecka albo całej apki zamiast samego `/api/*` - psuje deploy.
 - Oddawanie HTML logowania na żądania API/XHR zamiast czystego 401 JSON.

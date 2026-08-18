@@ -4,6 +4,8 @@ description: "Odswiez zvendorowane skille zewnetrzne od zrodla (VENDORED.md)"
 
 # vendor-refresh
 
+**Tryb: tylko `build`.** Jeśli `CCOS_MODE` jest inny, odpowiedz jednym zdaniem, że ta komenda działa w środowisku Build, i nie wykonuj jej.
+
 Argument: nazwa skilla z tabeli `plugins/artur/skills/VENDORED.md` (np. `use-railway`) albo `all`
 dla wszystkich pozycji tabeli. Bez argumentu - zapytaj, ktory skill albo `all`.
 
@@ -15,7 +17,9 @@ Dla kazdego wskazanego skilla:
    - Identyczne -> zgloś "bez zmian", nic nie ruszaj, przejdz do kolejnego.
    - Rozne -> PODMIEN caly katalog (buduj od zera, nie lataj punktowo - to artefakt zewnetrzny,
      nie tresc autorska tego repo). Pokaz zwiezle podsumowanie: ktore pliki zmienione/dodane/
-     usuniete, w przyblizeniu ile linii +/-.
+     usuniete, w przyblizeniu ile linii +/-. **Zaktualizuj kolumne "Pobrano (data, commit `ccos`)"
+     w VENDORED.md dla tego wiersza** - data dzisiejsza, SHA uzupelnij po commicie (albo zostaw
+     do dopisania w tym samym PR-ze po `git commit`, nie w osobnym).
 4. Nigdy nie modyfikuj tresci merytorycznej skilla wzgledem zrodla (to nie miejsce na wlasne
    poprawki - jesli cos w zvendorowanym skillu przeszkadza, to osobna decyzja, nie czesc tej
    komendy).

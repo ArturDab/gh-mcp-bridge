@@ -5,6 +5,8 @@ argument-hint: "[opcjonalnie: zawęź obszar, np. 'tylko edytor', 'pod kątem no
 
 # plan-review
 
+**Tryb: tylko `audit`.** Jeśli `CCOS_MODE` jest inny, odpowiedz jednym zdaniem, że ta komenda działa w środowisku Audit, i nie wykonuj jej. Powód mimo braku zapisu do kodu: krok 1 wymaga uruchomienia aplikacji i przeklikania jej jak użytkownik - to jest browserowa/pomiarowa aktywność z klucza bram trybu, nie samo czytanie.
+
 Wcielasz się w **power usera tej konkretnej aplikacji** - kogoś, kto używa jej codziennie, zna ją na wylot i ma opinie. Nie w product ownera, nie w konsultanta. W użytkownika, któremu na niej zależy i którego drażnią jej wady.
 
 **Nie piszesz kodu. Nie proponujesz architektury. Nie mówisz o technologii.**
@@ -30,7 +32,7 @@ Rzeczy, które **działają, ale źle**. Za wolno, za dużo kliknięć, niejasny
 Przy każdej pozycji: co konkretnie, gdzie, i czym to kończy się dla użytkownika.
 
 ### Drobne poprawki
-Rzeczy do zrobienia w mniej niż godzinę, które zauważalnie poprawiają codzienne używanie. Osobna, konkretna lista. To są kandydaci do trybu fast.
+Rzeczy do zrobienia w mniej niż godzinę, które zauważalnie poprawiają codzienne używanie. Osobna, konkretna lista. To są kandydaci do trybu quick.
 
 ### Duże funkcje
 Rzeczy, których nie ma, a powinny być. Osobna lista. Przy każdej: co daje użytkownikowi, jaki rozmiar (S/M/L), i czy to rozwija to, co już jest, czy otwiera nowy kierunek.

@@ -1,6 +1,6 @@
 ---
 name: dowod-przed-deklaracja
-description: Wczytuj ZAWSZE, zanim napiszesz, że coś jest zrobione, naprawione, przechodzi testy albo działa. Zakazuje twierdzeń bez świeżego dowodu z uruchomionej komendy. Obowiązuje we wszystkich trybach, także fast.
+description: Wczytuj ZAWSZE, zanim napiszesz, że coś jest zrobione, naprawione, przechodzi testy albo działa. Zakazuje twierdzeń bez świeżego dowodu z uruchomionej komendy. Obowiązuje we wszystkich trybach, także quick.
 ---
 
 # Dowód przed deklaracją
@@ -54,11 +54,11 @@ Pominięcie kroku to nie skrót. To zmyślanie.
 | „subagent napisał, że gotowe" | sprawdź sam |
 | „to trywialna zmiana" | trywialne zmiany też się psują |
 
-## W trybie fast
+## W trybie quick
 
-Ta zasada **nie znika** w trybie fast. Zmienia się tylko **ile** sprawdzasz, nie **czy** mówisz prawdę o tym, co sprawdziłeś.
+Ta zasada **nie znika** w trybie quick. Zmienia się tylko **ile** sprawdzasz, nie **czy** mówisz prawdę o tym, co sprawdziłeś.
 
-W fast uruchamiasz lint i build raz, na końcu. I piszesz dokładnie to, co z nich wyszło. Jeśli czegoś nie sprawdziłeś, napisz wprost: „nie sprawdzałem testów, zadanie ich nie dotyczyło". To jest uczciwa odpowiedź. „Wszystko działa" bez uruchomienia czegokolwiek - nie jest.
+W quick uruchamiasz lint i build raz, na końcu. I piszesz dokładnie to, co z nich wyszło. Jeśli czegoś nie sprawdziłeś, napisz wprost: „nie sprawdzałem testów, zadanie ich nie dotyczyło". To jest uczciwa odpowiedź. „Wszystko działa" bez uruchomienia czegokolwiek - nie jest.
 
 ## Jak wygląda dobra deklaracja
 

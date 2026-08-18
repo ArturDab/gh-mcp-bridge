@@ -1,0 +1,31 @@
+{
+  "appName": "Nazwa projektu",
+  "baseUrl": "http://127.0.0.1:8000",
+
+  "widths": [1440, 390],
+  "stuckLoadingMs": 10000,
+  "maxElementsPerRoute": 500,
+  "clickWaitMs": 450,
+  "networkIdleTimeoutMs": 2000,
+
+  "routes": {
+    "static": [],
+    "discoverFromNav": true,
+    "navLinkSelector": "a[href^='#']",
+    "extra": []
+  },
+
+  "costlyTextPattern": "\\b(generate|generuj|send to production|wy[sś]lij na produkcj|deploy|publish|publikuj|webhook|log ?out|wyloguj|delete permanently|usu[nń] na sta[lł]e|pay|zap[lł]a[cć]|charge|purchase|subscribe|subskrybuj)\\b",
+
+  "selfNavPattern": null,
+
+  "login": {
+    "usernameSelector": null,
+    "passwordSelector": null,
+    "submitKey": "Enter"
+  },
+  "credentialsEnv": {
+    "login": "BUGSCAN_LOGIN",
+    "password": "BUGSCAN_PASSWORD"
+  }
+}

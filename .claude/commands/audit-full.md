@@ -5,7 +5,7 @@ argument-hint: "[opcjonalnie: zawęź obszar]"
 
 # audit-full
 
-**Tryb: `test`.** W innym odmów i odeślij. Nic nie zmienia.
+**Tryb: `audit`.** W innym odmów i odeślij. Nic nie zmienia.
 
 Ma być **kompleksowy, konkretny i użyteczny**. Nie zbiór ogólników.
 
@@ -17,19 +17,21 @@ Jeśli nie masz dowodu, nie zgłaszaj.
 
 ## Krok 1 - subagenci równolegle
 
-Powołaj naraz, każdy z własnym obszarem, każdy tylko do czytania. Model wg reguły ze skilla:
+Powołaj naraz, po nazwie, każdy tylko do czytania:
 
-| Agent | Model | Obszar |
-|---|---|---|
-| inwentarz | haiku | struktura, zależności, skrypty, martwe pliki, TODO/FIXME |
-| bezpieczeństwo | sonnet | sekrety w kodzie i historii, uprawnienia, walidacja wejścia, auth |
-| poprawność | sonnet | łykane błędy, nieobsłużone przypadki brzegowe, wyścigi, stan po odświeżeniu |
-| interfejs | sonnet | wartości z palca, zgodność z shadcn, brakujące stany, dostępność |
-| teksty | sonnet | polszczyzna w interfejsie, kalki, niejasne komunikaty błędów |
-| spójność docs | haiku | czy CLAUDE.md i docs opisują to, co jest w kodzie |
-| wydajność | sonnet | pomiary, ciężkie zapytania, nadmiarowe renderowanie, rozmiar paczek |
+| Agent | Obszar |
+|---|---|
+| `tooling-auditor` | struktura, zależności, skrypty, build/lint/typecheck, martwe pliki |
+| `security-reliability-auditor` | sekrety w kodzie i historii, uprawnienia, walidacja wejścia, auth |
+| `testing-auditor` | łykane błędy, nieobsłużone przypadki brzegowe, luki testowe, wyścigi |
+| `ui-design-auditor` | wartości z palca, zgodność z shadcn, brakujące stany, dostępność |
+| `ux-content-auditor` | polszczyzna w interfejsie, kalki, niejasne komunikaty błędów |
+| `docs-memory-auditor` | czy CLAUDE.md i docs opisują to, co jest w kodzie |
+| `architecture-auditor` | struktura, coupling, przepływ danych - w tym miejsca ciężkie wydajnościowo |
 
 Nie pozwól im się nakładać. Zbierz wyniki, zintegruj sam.
+
+Uwaga: żaden z ośmiu agentów nie jest dedykowanym audytorem wydajności - `architecture-auditor` przejmuje to tymczasowo jako najbliższy zakresem. Jeśli projekt regularnie potrzebuje głębokich pomiarów wydajności, to jest kandydat na dziewiątego agenta, nie coś do cichego dorobienia tutaj.
 
 ## Krok 2 - odsiej szum
 
@@ -56,6 +58,6 @@ Trzy poziomy:
 Na końcu:
 - **Ile jest naprawdę** - liczba pozycji w każdej kategorii
 - **Trzy rzeczy najpierw** - z uzasadnieniem, dlaczego akurat te
-- **Gotowe zadanie** - lista krytycznych i ważnych, sformatowana tak, żeby Artur mógł ją wkleić jako zadanie do sesji Fast albo Deep, z sugerowanym trybem przy każdej
+- **Gotowe zadanie** - lista krytycznych i ważnych, sformatowana tak, żeby Artur mógł ją wkleić jako zadanie do sesji Quick albo Build, z sugerowanym trybem przy każdej
 
 Nie naprawiaj. Nie commituj.

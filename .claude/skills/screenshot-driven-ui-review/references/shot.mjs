@@ -52,6 +52,8 @@ for (const [name, width, height] of viewports) {
     (document.head || document.documentElement).appendChild(s);
   });
   await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 }).catch(() => {});
+  // czekaj na kroje pisma - networkidle nie gwarantuje, ze fonty sa juz podmienione
+  await page.evaluate(async () => { await document.fonts.ready; }).catch(() => {});
   const out = `${outdir}/${name}.png`;
   await page.screenshot({ path: out, fullPage: true });
   console.log(out);
