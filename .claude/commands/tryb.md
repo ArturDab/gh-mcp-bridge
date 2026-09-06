@@ -8,7 +8,7 @@ Komenda diagnostyczna. Zero zapisu, nie uruchamia niczego innego. Brak bramy try
 
 1. Odczytaj `CCOS_MODE` (`echo $CCOS_MODE`). Nie zgaduj trybu z kontekstu rozmowy ani z tego, jakiej komendy Artur właśnie użył - to jedyna komenda w tym pluginie, która tylko odczytuje zmienną, bez interpretacji tego, co Artur mógł mieć na myśli.
 2. Ustal tryb: wartość zmiennej, jeśli to `quick`, `build` albo `audit`; w przeciwnym razie (brak zmiennej albo stara wartość `fast`/`deep`/`test`) - `quick`, i powiedz wprost, że to wartość domyślna albo zaległość do zgłoszenia.
-3. Odpowiedz krótko, bez reszty formatu odpowiedzi (to nie jest zadanie, więc pomiń sekcje „Co zrobiłem"/„Linki"):
+3. Odpowiedz krótko, bez formatu raportu (to nie jest zadanie - format opisuje skill artur-claude-code-os → „Format odpowiedzi", tu go pomijasz):
 
 ```
 Tryb: <quick|build|audit>
