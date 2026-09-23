@@ -9,9 +9,11 @@ description: "Autonomiczny silnik dużych partii"
 
 PISZE KOD. Deploy tylko na PREVIEW, nigdy produkcja bez wyraźnego sygnału Artura. Twarde stopy (zgłoś, nie wykonuj): sekrety, migracje produkcyjne, infra, auth/payments.
 
-Pracuj jak długa, samodzielna sesja: maksymalna autonomia między dotknięciami, dotknięcia Artura zbite w paczki. Nie rób jednej rzeczy i nie wracaj po jednej fazie - mielisz duży zakres w pętli, parkujesz decyzje, deployujesz na preview, zostawiasz stan tak, żeby następny bieg podjął plan dalej.
+Pracuj jak długa, samodzielna sesja: maksymalna autonomia między dotknięciami (po akceptacji planu - patrz bramka planu niżej), dotknięcia Artura zbite w paczki. Nie rób jednej rzeczy i nie wracaj po jednej fazie - mielisz duży zakres w pętli, parkujesz decyzje, deployujesz na preview, zostawiasz stan tak, żeby następny bieg podjął plan dalej.
 
-Na starcie odtwórz stan i podejmij plan: przeczytaj CLAUDE.md, docs/STATE.md, STATE.md, STATE.md, STATE.md, DEPLOYMENT.md, VISUAL_DIRECTION.md, git status, skrypty, CI, ostatni diff, TODO/FIXME. Kontynuuj plan tam, gdzie skończył poprzedni bieg. Brak roadmapy = zbuduj bezpieczny zakres z realnego stanu i zaznacz, że brak planu ograniczył partię (paliwo silnika: `/plan-roadmap`).
+Na starcie odtwórz stan i podejmij plan: przeczytaj CLAUDE.md, docs/STATE.md, DEPLOYMENT.md, VISUAL_DIRECTION.md, git status, skrypty, CI, ostatni diff, TODO/FIXME. Kontynuuj plan tam, gdzie skończył poprzedni bieg. Brak roadmapy = zbuduj bezpieczny zakres z realnego stanu i zaznacz, że brak planu ograniczył partię (paliwo silnika: `/plan-roadmap`).
+
+Bramka planu (przed kodem): jeśli partia zmienia więcej niż jeden plik albo model danych (schemat bazy, typy danych, migracje, struktura zapisywanych plików), zatrzymaj bieg po planie, przed pierwszą zmianą w kodzie. Pokaż plan do akceptacji: pliki, zmiany, kolejność, weryfikacja każdego kroku. Nic nie zmieniaj, dopóki Artur go nie zaakceptuje; po akceptacji mielisz zaakceptowany zakres w pętli bez kolejnych zatrzymań. Drobna zmiana punktowa (jeden plik, bez modelu danych) przechodzi bez bramki. Praca spoza zaakceptowanego planu, która spełnia warunek bramki, trafia do parku decyzji, nie do kodu. Bramka obowiązuje zawsze - automaty w Routines nie używają tej komendy, więc wariantu bez zatrzymania nie ma.
 
 Pętla faz: wybierz fazę → wykonaj → zweryfikuj → deploy preview → zaktualizuj stan → następna bezpieczna faza. Powtarzaj aż wyczerpiesz bezpieczny zakres albo trafisz na twardy bloker. NIE kończ po jednej fazie. Kolejność: bezpieczne quick winy → ważne średnie → low-risk tech debt → higiena. Źródła zakresu: dokumentacja i pamięć, weryfikacja, luki testowe, UX/UI quick winy, web design polish, low-risk tech debt, CI/tooling, higiena.
 
@@ -22,12 +24,12 @@ Granica autonomii (zmiana KIERUNKU vs naprawa WADY):
 - Zaparkuj jako decyzję (brama): zmiana kierunku marki (kolory, typografia, ton), zakres i kolejność sekcji/funkcji, pozycjonowanie i value proposition, treść merytoryczna copy, wszystko co dotyka db/auth/payments/migracji/public API.
 - Kontrast graniczny: w palecie marki wykonaj; wymaga zmiany firmowego odcienia zaparkuj.
 
-Jak pracować w partii: funkcje i bugfixy w TDD (test-driven-development); bug w systematic-debugging (root cause przed fixem); niezależne zadania deleguj świeżym subagentom (subagent-driven-development) z dwustopniową recenzją; audyty read-only subagentami; web-ui przez pętlę wizualną.
+Jak pracować w partii: funkcje i bugfixy w TDD (test-driven-development); bug w systematic-debugging (root cause przed fixem); niezależne zadania deleguj świeżym subagentom (subagent-driven-development): weryfikacja wyniku przez `task-result-verifier`, potem dwustopniowa recenzja; audyty read-only subagentami; web-ui przez pętlę wizualną.
 
 Weryfikacja po każdej fazie (verification-before-completion): uruchom realne komendy (verify:full, testy, lint, build, web-ui pętla wizualna), oceniaj po ich wyjściu. Faza bez zielonej weryfikacji nie jest zrobiona.
 
 Deploy: po weryfikacji auto-merge na branch preview i deploy na PREVIEW (nigdy produkcja). Produkcję merguj wyłącznie na sygnał Artura.
 
-Aktualizacja stanu na końcu: docs/STATE.md, STATE.md, STATE.md, STATE.md tak, by kolejny bieg wznowił bez dopytywania (fazy wykonane, w toku, zaparkowane decyzje, blokery, następne 3-7 zadań).
+Aktualizacja stanu na końcu: docs/STATE.md tak, by kolejny bieg wznowił bez dopytywania (fazy wykonane, w toku, zaparkowane decyzje, blokery, następne 3-7 zadań).
 
 Raport końcowy (do akceptu z telefonu): jak wybrałem i mieliłem zakres; fazy wykonane/pominięte/w toku; zmienione pliki; weryfikacja z DOWODEM; tabela zaparkowanych decyzji (# | propozycja | dlaczego brama | rekomendacja | koszt); blokery osobno; co zaktualizowane w docs. Zaakceptowane decyzje wpadają w następny bieg.

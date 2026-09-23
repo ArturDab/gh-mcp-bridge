@@ -20,9 +20,14 @@ Dla kazdego wskazanego skilla:
      usuniete, w przyblizeniu ile linii +/-. **Zaktualizuj kolumne "Pobrano (data, commit `ccos`)"
      w VENDORED.md dla tego wiersza** - data dzisiejsza, SHA uzupelnij po commicie (albo zostaw
      do dopisania w tym samym PR-ze po `git commit`, nie w osobnym).
-4. Nigdy nie modyfikuj tresci merytorycznej skilla wzgledem zrodla (to nie miejsce na wlasne
-   poprawki - jesli cos w zvendorowanym skillu przeszkadza, to osobna decyzja, nie czesc tej
-   komendy).
+   - Przed podmiana przeczytaj w VENDORED.md wpisy "Wykluczenie" i sekcje "Lokalne modyfikacje"
+     dla tego skilla. Wykluczone pliki i katalogi usun z nowej wersji przed skopiowaniem (nie
+     wracaja). Lokalne modyfikacje nanies ponownie na nowa wersje i pokaz roznice; jesli nowa
+     wersja zmienila ten sam fragment, zatrzymaj sie na tym skillu i zglos konflikt zamiast
+     wybierac po cichu.
+4. Nigdy nie dokladaj nowych wlasnych poprawek do tresci skilla wzgledem zrodla (to nie miejsce na
+   nie - jesli cos w zvendorowanym skillu przeszkadza, to osobna decyzja Artura, ktora trafia do
+   "Lokalnych modyfikacji" w VENDORED.md, nie czesc tej komendy).
 
 Zapis: galaz robocza + PR, jak reszta zapisu OS-u (nigdy commitem wprost na main w tym repo).
 Nie rozlewaj recznie do repo konsumujacych - po zmergowaniu PR-a robi to juz `sync-to-repos.yml`.

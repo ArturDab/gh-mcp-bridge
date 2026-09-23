@@ -3,7 +3,7 @@ name: playbook-stack
 description: "Reguły techniczno-operacyjne dla pracy z kodem: narzucone biblioteki, kalibracja estetyki, archetypy projektów, integracje MCP, granice sandboxa, mikrointerakcje, deep-research. Trigger: jak budować, jakiej biblioteki użyć, styl wizualny, sandbox, MCP."
 metadata:
   author: artur
-  version: "4.0.0"
+  version: "4.1.0"
 ---
 
 # PLAYBOOK-STACK - reguły techniczno-operacyjne (CCOS)
@@ -89,6 +89,9 @@ Meta-reguła: nie klep interaktywnych prymitywów ręcznie - użyj gotowego (Rad
   animowany, podpięty do danych. Reszta apki idzie już w tym kierunku.
 - Makiety MUSZĄ być wysokiej wierności, nie wireframe - inaczej test smaku jest bezwartościowy.
 - Jeśli Artur wybiera "od razu jeden kierunek": pomiń Krok 1, buduj wprost pełną wersję z referencjami.
+- Warunek oddania pracy UI (klikalny adres do aktualnej wersji na podglądzie) jest regułą
+  poziomu `artur-claude-code-os`, sekcja „Praca z UI" - tam jest jej pełne brzmienie, tu tylko
+  zastosowanie do makiet three-up.
 - **Referencje wizualne to największy lewar.** Do każdej budowy/makiety dawaj KONKRETNE referencje
   (screeny, linki do stron/produktów w duchu których ma być) - referencje biją opisywanie
   przymiotnikami zawsze. W three-up: każdy z trzech wariantów zakotwicz w innej referencji.

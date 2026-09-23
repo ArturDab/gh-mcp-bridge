@@ -108,7 +108,7 @@ jej tutaj - trzymaj się jednego źródła.
 - Twitter/X: "na X-ie", "użytkownik X-a"
 - Nazwy platform odmieniane naturalnie: "na Reddicie", "na YouTubie", "na LinkedInie"
 - Myślnik przed "i"/"ale" - nie. W tytułach - zakaz.
-- Pytajnik w śródtytule i tytule - **reguła sprawdzalna, nie uznaniowa**: nagłówek zaczynający się od zaimka pytajnego (co, gdzie, jak, czy, dlaczego, kiedy, kto, ile, po co, skąd) JEST pytaniem i kończy się pytajnikiem. Bez wyjątków, także gdy traktujesz nagłówek jak etykietę sekcji - to najczęstsze źródło błędu. "Gdzie wstawić instrukcję?" nie "Gdzie wstawić instrukcję".
+- Pytajnik w śródtytule i tytule - **reguła sprawdzalna, nie uznaniowa**: nagłówek zaczynający się od zaimka pytajnego (co, czego, czym, gdzie, jak, czy, dlaczego, kiedy, kto, ile, po co, skąd) JEST pytaniem i kończy się pytajnikiem. Bez wyjątków, także gdy traktujesz nagłówek jak etykietę sekcji - to najczęstsze źródło błędu. "Gdzie wstawić instrukcję?" nie "Gdzie wstawić instrukcję".
 - Nie zamieniaj naturalnego pytania na sztuczne twierdzenie tylko po to, by uniknąć pytajnika ("Skąd się wzięło to słowo?" bije "Skąd się wzięło słowo na to, co robisz").
 
 ### Otwarcie i zamknięcie

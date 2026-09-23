@@ -4,19 +4,14 @@ Use this template when dispatching a spec compliance reviewer subagent.
 
 **Purpose:** Verify implementer built what was requested (nothing more, nothing less)
 
+**Order matters (CCOS rule):** fixed instructions first, variable part (requirements, implementer's report) last, so the fixed prefix stays cacheable.
+
 ```
 Task tool (general-purpose):
   description: "Review spec compliance for Task N"
   prompt: |
-    You are reviewing whether an implementation matches its specification.
-
-    ## What Was Requested
-
-    [FULL TEXT of task requirements]
-
-    ## What Implementer Claims They Built
-
-    [From implementer's report]
+    You are reviewing whether an implementation matches its specification. The requirements
+    and the implementer's report are at the end of this prompt. Read these rules first.
 
     ## CRITICAL: Do Not Trust the Report
 
@@ -53,9 +48,17 @@ Task tool (general-purpose):
     - Did they solve the wrong problem?
     - Did they implement the right feature but wrong way?
 
-    **Verify by reading code, not by trusting report.**
+    **Verify by reading code, not by trusting report.** You only read; you never edit.
 
     Report:
     - ✅ Spec compliant (if everything matches after code inspection)
     - ❌ Issues found: [list specifically what's missing or extra, with file:line references]
+
+    ## What Was Requested
+
+    [FULL TEXT of task requirements]
+
+    ## What Implementer Claims They Built
+
+    [From implementer's report]
 ```

@@ -9,7 +9,7 @@ description: Odtwarza kontekst projektu na starcie sesji i proponuje pierwszy kr
 
 Odtwórz kontekst, zanim cokolwiek zmienisz.
 
-Przeczytaj CLAUDE.md, potem docs/STATE.md, STATE.md, STATE.md, STATE.md, STATE.md, STATE.md (jeśli istnieją). Sprawdź `git status`, dostępne skrypty, ostatnie commity, pliki z najnowszego handoffu.
+Przeczytaj CLAUDE.md, potem docs/STATE.md (jeśli istnieje). Sprawdź `git status`, dostępne skrypty, ostatnie commity, pliki z najnowszego handoffu.
 
 Zanim wprowadzisz jakąkolwiek zmianę w kodzie, daj krótkie podsumowanie:
 1. Czym jest projekt

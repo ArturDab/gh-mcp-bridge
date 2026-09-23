@@ -16,7 +16,7 @@ Powołaj subagentów read-only. Model dobierz wg reguły w skillu artur-claude-c
 
 - **haiku**: inwentarz repo - struktura, skrypty w package.json, stan gałęzi, otwarte PR-y, pliki tymczasowe, debug logi, runtime data w repo, TODO/FIXME, nieużywane importy
 - **haiku**: martwy kod - uruchom `knip` jeśli jest, zbierz listę nieużywanych plików, eksportów, zależności
-- **sonnet**: rozjazd docs vs kod - czy CLAUDE.md, STATE.md, STATE.md, DEPLOYMENT.md opisują to, co faktycznie jest w kodzie
+- **sonnet**: rozjazd docs vs kod - czy CLAUDE.md, docs/STATE.md, DEPLOYMENT.md opisują to, co faktycznie jest w kodzie
 - **sonnet**: dług techniczny - realne problemy w kodzie z oceną wagi, nie lista życzeń
 
 Nie pozwól agentom edytować. Zbierz wyniki, zintegruj sam.
@@ -36,7 +36,7 @@ Rozbieżności napraw. Nie nadpisuj lokalnych rozwiązań, które są lepsze - z
 
 **To jest najczęściej pomijane i najbardziej szkodliwe.** W CLAUDE.md i docs gromadzą się zdania, które kiedyś były prawdą, a teraz rozbrajają kolejne sesje: „renderu się nie da", „ten endpoint nie działa", „używamy X" (już nie używamy).
 
-Przejdź CLAUDE.md, STATE.md, STATE.md, DEPLOYMENT.md i sprawdź **każde twierdzenie względem kodu**. Usuń wszystko, co przestało być prawdą. Zgłoś, co usunąłeś i dlaczego.
+Przejdź CLAUDE.md, docs/STATE.md, DEPLOYMENT.md i sprawdź **każde twierdzenie względem kodu**. Usuń wszystko, co przestało być prawdą. Zgłoś, co usunąłeś i dlaczego.
 
 ## Krok 4 - sprzątanie i martwy kod (bezpieczne, autonomicznie)
 

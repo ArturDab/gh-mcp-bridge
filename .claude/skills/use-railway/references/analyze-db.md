@@ -69,9 +69,8 @@ Use the `production` environment by default. If multiple non-PR environments exi
 | Database Type | Script |
 |---------------|--------|
 | PostgreSQL | `scripts/analyze-postgres.py` |
-| MySQL | `scripts/analyze-mysql.py` |
-| Redis | `scripts/analyze-redis.py` |
-| MongoDB | `scripts/analyze-mongo.py` |
+
+MySQL, Redis, and MongoDB analysis scripts and references are not vendored here (patrz `VENDORED.md`) — none of Artur's repos use those databases. If one shows up, restore the matching script and reference from `railwayapp/railway-skills`.
 
 **All scripts share the same CLI interface** (use the script name from the table above):
 ```bash
@@ -287,9 +286,6 @@ After running the script and checking collection status, load the reference for 
 | Database | Reference | What It Covers |
 |----------|-----------|----------------|
 | PostgreSQL | [analyze-db-postgres.md](analyze-db-postgres.md) | What psql collects, log analysis checklist, tuning formulas, vacuum priority, pg_stat_statements, applying fixes |
-| MySQL | [analyze-db-mysql.md](analyze-db-mysql.md) | All 12 metric sections (overview, query throughput, InnoDB, efficiency, buffer pool, I/O, network, locks, cache, top queries, tables, active queries), patterns, tuning |
-| Redis | [analyze-db-redis.md](analyze-db-redis.md) | INFO ALL metrics, memory fragmentation, cache thrashing, persistence, command stats |
-| MongoDB | [analyze-db-mongo.md](analyze-db-mongo.md) | serverStatus, WiredTiger cache, query efficiency, connection saturation, oplog |
 
 **Always load the DB-specific reference** — it contains the metric sections, thresholds, and tuning knowledge needed for proper analysis.
 
@@ -341,4 +337,4 @@ Railway services auto-scale CPU, RAM, and disk based on actual usage. Users do N
 ## Validated against
 
 - Docs: [ssh.md](https://docs.railway.com/cli/ssh), [logs.md](https://docs.railway.com/cli/logs), [metrics.md](https://docs.railway.com/cli/metrics), [api docs](https://docs.railway.com/api/llms-docs.md)
-- Local scripts: [analyze-postgres.py](../scripts/analyze-postgres.py), [analyze-mysql.py](../scripts/analyze-mysql.py), [analyze-redis.py](../scripts/analyze-redis.py), [analyze-mongo.py](../scripts/analyze-mongo.py), [dal.py](../scripts/dal.py)
+- Local scripts: [analyze-postgres.py](../scripts/analyze-postgres.py), [dal.py](../scripts/dal.py)

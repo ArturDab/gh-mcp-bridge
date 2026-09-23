@@ -5,11 +5,17 @@ description: Use when executing implementation plans with independent tasks in t
 
 # Subagent-Driven Development
 
-Execute plan by dispatching fresh subagent per task, with two-stage review after each: spec compliance review first, then code quality review.
+Execute plan by dispatching fresh subagent per task, with a mechanical result check and a two-stage review after each: result verification first (`task-result-verifier`), then spec compliance review, then code quality review.
 
 **Why subagents:** You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
 
-**Core principle:** Fresh subagent per task + two-stage review (spec then quality) = high quality, fast iteration
+**Core principle:** Fresh subagent per task + mechanical result check + two-stage review (spec then quality) = high quality, fast iteration
+
+## Implementer Boundaries (CCOS rule)
+
+The implementer subagent writes code **only within the scope the controller (main session) assigned**. It never merges, never pushes to a remote, never widens scope, and never approves its own work — its "DONE" is a claim to be checked, not a result. It may commit locally in its own branch or worktree, because reviewers need a diff to inspect. Accepting the result, integrating it, verifying it with real commands, and deciding what happens next belong **only** to the controller.
+
+**Isolation:** in one working directory only one subagent writes at a time. Parallel writing is allowed **only** in separate git worktrees (e.g. `isolation: worktree` on the subagent). Reviewers and verifiers never write: they get no edit tools, and where they keep a terminal (the result verifier runs tests) their instructions limit it to read-only git and test commands.
 
 **Continuous execution:** Do not pause to check in with your human partner between tasks. Execute all tasks from the plan without stopping. The only reasons to stop are: BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, or all tasks complete. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it.
 
@@ -51,6 +57,9 @@ digraph process {
         "Implementer subagent asks questions?" [shape=diamond];
         "Answer questions, provide context" [shape=box];
         "Implementer subagent implements, tests, commits, self-reviews" [shape=box];
+        "Dispatch task-result-verifier (./result-verifier-prompt.md)" [shape=box];
+        "Verifier: declared files, changes and tests exist and pass?" [shape=diamond];
+        "Implementer subagent fills the gaps" [shape=box];
         "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [shape=box];
         "Spec reviewer subagent confirms code matches spec?" [shape=diamond];
         "Implementer subagent fixes spec gaps" [shape=box];
@@ -62,15 +71,18 @@ digraph process {
 
     "Read plan, extract all tasks with full text, note context, create TodoWrite" [shape=box];
     "More tasks remain?" [shape=diamond];
-    "Dispatch final code reviewer subagent for entire implementation" [shape=box];
-    "Use superpowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
+    "Dispatch final code reviewer subagent for entire implementation" [shape=box style=filled fillcolor=lightgreen];
 
     "Read plan, extract all tasks with full text, note context, create TodoWrite" -> "Dispatch implementer subagent (./implementer-prompt.md)";
     "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
     "Implementer subagent asks questions?" -> "Answer questions, provide context" [label="yes"];
     "Answer questions, provide context" -> "Dispatch implementer subagent (./implementer-prompt.md)";
     "Implementer subagent asks questions?" -> "Implementer subagent implements, tests, commits, self-reviews" [label="no"];
-    "Implementer subagent implements, tests, commits, self-reviews" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)";
+    "Implementer subagent implements, tests, commits, self-reviews" -> "Dispatch task-result-verifier (./result-verifier-prompt.md)";
+    "Dispatch task-result-verifier (./result-verifier-prompt.md)" -> "Verifier: declared files, changes and tests exist and pass?";
+    "Verifier: declared files, changes and tests exist and pass?" -> "Implementer subagent fills the gaps" [label="no - NIEZAMKNIĘTE"];
+    "Implementer subagent fills the gaps" -> "Dispatch task-result-verifier (./result-verifier-prompt.md)" [label="re-verify"];
+    "Verifier: declared files, changes and tests exist and pass?" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [label="yes - ZAMKNIĘTE"];
     "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" -> "Spec reviewer subagent confirms code matches spec?";
     "Spec reviewer subagent confirms code matches spec?" -> "Implementer subagent fixes spec gaps" [label="no"];
     "Implementer subagent fixes spec gaps" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [label="re-review"];
@@ -82,30 +94,44 @@ digraph process {
     "Mark task complete in TodoWrite" -> "More tasks remain?";
     "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
     "More tasks remain?" -> "Dispatch final code reviewer subagent for entire implementation" [label="no"];
-    "Dispatch final code reviewer subagent for entire implementation" -> "Use superpowers:finishing-a-development-branch";
 }
 ```
 
+## Before Dispatch: Context Check (CCOS rule)
+
+Before dispatching any subagent, the controller checks that the task text contains all four:
+
+1. **Goal** - what "done" looks like, in one or two sentences
+2. **Files** - which files to create or change (and which not to touch)
+3. **Constraints** - scope limits, patterns to follow, what is out of scope
+4. **Verification** - the exact commands or checks that prove the task works
+
+For every missing item, the controller fills the gap itself with targeted search (Grep, Glob, Read of the specific files) - **at most three search passes** in total per task. It does not dispatch a subagent to go find its own context.
+
+If something is still missing after three passes: do not dispatch. Ask your human partner the specific question, or mark the task as blocked in TodoWrite and move to the next independent task. A subagent dispatched with a gap will guess, and a guess costs a full review loop.
+
 ## Model Selection
 
-Use the least powerful model that can handle each role to conserve cost and increase speed.
+Use the least powerful model that can handle each role to conserve cost and increase speed. Pass the `model` parameter explicitly on every dispatch (Task/Agent tool call) — it overrides whatever is set in an agent's own frontmatter, so you don't need a dedicated agent file per role just to pin a model.
 
-**Mechanical implementation tasks** (isolated functions, clear specs, 1-2 files): use a fast, cheap model. Most implementation tasks are mechanical when the plan is well-specified.
+**Implementer subagent** (writes code, runs tests, commits): `sonnet`. This is judgment work even when the spec is tight — don't downgrade it.
 
-**Integration and judgment tasks** (multi-file coordination, pattern matching, debugging): use a standard model.
+**Spec compliance reviewer** and **code quality reviewer**: `sonnet`. Both require reading code against intent, not just checking it exists.
 
-**Architecture, design, and review tasks**: use the most capable available model.
+**Purely mechanical existence checks** (does this file exist, does this test file exist, is this script present, inventory/listing with no judgment) dispatched as a separate, narrowly-scoped subagent: `haiku`. Reserve this tier for checks a script could answer — the moment the task requires reading code for correctness or quality, use `sonnet` instead.
+
+**Architecture, design, and open-ended review tasks** (evaluating an overall approach, not a single task's output): the most capable available model — do not downgrade these.
 
 **Task complexity signals:**
-- Touches 1-2 files with a complete spec → cheap model
-- Touches multiple files with integration concerns → standard model
-- Requires design judgment or broad codebase understanding → most capable model
+- Pure existence/presence check, no code reading → `haiku`
+- Implements, integrates, or reviews actual code → `sonnet`
+- Requires architectural judgment or broad codebase understanding → most capable model
 
 ## Handling Implementer Status
 
 Implementer subagents report one of four statuses. Handle each appropriately:
 
-**DONE:** Proceed to spec compliance review.
+**DONE:** Proceed to result verification (`task-result-verifier`). Only a ZAMKNIĘTE verdict lets the task move on to spec compliance review; NIEZAMKNIĘTE means the task is not done — send the gaps back to the implementer and verify again.
 
 **DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.
 
@@ -122,6 +148,7 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 ## Prompt Templates
 
 - `./implementer-prompt.md` - Dispatch implementer subagent
+- `./result-verifier-prompt.md` - Dispatch `task-result-verifier` after every implementer task
 - `./spec-reviewer-prompt.md` - Dispatch spec compliance reviewer subagent
 - `./code-quality-reviewer-prompt.md` - Dispatch code quality reviewer subagent
 
@@ -150,6 +177,9 @@ Implementer: "Got it. Implementing now..."
   - Self-review: Found I missed --force flag, added it
   - Committed
 
+[Dispatch task-result-verifier with the implementer's declaration]
+Verifier: ZAMKNIĘTE - install-hook.ts changed, 5/5 tests pass (npm test -- hook)
+
 [Dispatch spec compliance reviewer]
 Spec reviewer: ✅ Spec compliant - all requirements met, nothing extra
 
@@ -169,6 +199,12 @@ Implementer:
   - 8/8 tests passing
   - Self-review: All good
   - Committed
+
+[Dispatch task-result-verifier]
+Verifier: NIEZAMKNIĘTE - declared test file recovery.test.ts does not exist
+
+[Implementer adds the missing test file]
+Verifier: ZAMKNIĘTE - 8/8 tests pass
 
 [Dispatch spec compliance reviewer]
 Spec reviewer: ❌ Issues:
@@ -206,7 +242,7 @@ Done!
 **vs. Manual execution:**
 - Subagents follow TDD naturally
 - Fresh context per task (no confusion)
-- Parallel-safe (subagents don't interfere)
+- Parallel-safe only with one writer per working directory (separate worktrees for parallel implementers)
 - Subagent can ask questions (before AND during work)
 
 **vs. Executing Plans:**
@@ -228,7 +264,7 @@ Done!
 - Code quality ensures implementation is well-built
 
 **Cost:**
-- More subagent invocations (implementer + 2 reviewers per task)
+- More subagent invocations (implementer + result verifier + 2 reviewers per task; the verifier runs on the cheapest model)
 - Controller does more prep work (extracting all tasks upfront)
 - Review loops add iterations
 - But catches issues early (cheaper than debugging later)
@@ -237,11 +273,14 @@ Done!
 
 **Never:**
 - Start implementation on main/master branch without explicit user consent
-- Skip reviews (spec compliance OR code quality)
+- Skip result verification (`task-result-verifier`) or reviews (spec compliance OR code quality)
+- Start spec review on a task the verifier reported as NIEZAMKNIĘTE
 - Proceed with unfixed issues
-- Dispatch multiple implementation subagents in parallel (conflicts)
+- Dispatch multiple implementation subagents in parallel in the same working directory (parallel only in separate git worktrees)
+- Let an implementer merge, push, widen scope, or mark its own task complete
 - Make subagent read plan file (provide full text instead)
 - Skip scene-setting context (subagent needs to understand where task fits)
+- Dispatch a task that lacks goal, files, constraints or verification (run the context check first, max three search passes)
 - Ignore subagent questions (answer before letting them proceed)
 - Accept "close enough" on spec compliance (spec reviewer found issues = not done)
 - Skip review loops (reviewer found issues = implementer fixes = review again)
@@ -267,13 +306,7 @@ Done!
 ## Integration
 
 **Required workflow skills:**
-- **superpowers:using-git-worktrees** - Ensures isolated workspace (creates one or verifies existing)
-- **superpowers:writing-plans** - Creates the plan this skill executes
-- **superpowers:requesting-code-review** - Code review template for reviewer subagents
-- **superpowers:finishing-a-development-branch** - Complete development after all tasks
+- **code-review** - Review template for reviewer subagents
 
 **Subagents should use:**
-- **superpowers:test-driven-development** - Subagents follow TDD for each task
-
-**Alternative workflow:**
-- **superpowers:executing-plans** - Use for parallel session instead of same-session execution
+- **test-driven-development** - Subagents follow TDD for each task

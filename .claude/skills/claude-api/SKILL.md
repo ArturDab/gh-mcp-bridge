@@ -68,13 +68,7 @@ Before reading code examples, determine which language the user is working in:
    - `*.py`, `requirements.txt`, `pyproject.toml`, `setup.py`, `Pipfile` → **Python** — read from `python/`
    - `*.ts`, `*.tsx`, `package.json`, `tsconfig.json` → **TypeScript** — read from `typescript/`
    - `*.js`, `*.jsx` (no `.ts` files present) → **TypeScript** — JS uses the same SDK, read from `typescript/`
-   - `*.java`, `pom.xml`, `build.gradle` → **Java** — read from `java/`
-   - `*.kt`, `*.kts`, `build.gradle.kts` → **Java** — Kotlin uses the Java SDK, read from `java/`
-   - `*.scala`, `build.sbt` → **Java** — Scala uses the Java SDK, read from `java/`
-   - `*.go`, `go.mod` → **Go** — read from `go/`
-   - `*.rb`, `Gemfile` → **Ruby** — read from `ruby/`
-   - `*.cs`, `*.csproj` → **C#** — read from `csharp/`
-   - `*.php`, `composer.json` → **PHP** — read from `php/`
+   - Java, Go, Ruby, C#, PHP projects → nie ma tu zvendorowanych przykładów kodu (patrz `VENDORED.md`); użyj cURL/raw HTTP z `curl/` jako referencji albo Python/TypeScript jako wzorca do przełożenia na SDK danego języka
 
 2. **If multiple languages detected** (e.g., both Python and TypeScript files):
 
@@ -83,10 +77,10 @@ Before reading code examples, determine which language the user is working in:
 
 3. **If language can't be inferred** (empty project, no source files, or unsupported language):
 
-   - Use AskUserQuestion with options: Python, TypeScript, Java, Go, Ruby, cURL/raw HTTP, C#, PHP
+   - Use AskUserQuestion with options: Python, TypeScript, cURL/raw HTTP
    - If AskUserQuestion is unavailable, default to Python examples and note: "Showing Python examples. Let me know if you need a different language."
 
-4. **If unsupported language detected** (Rust, Swift, C++, Elixir, etc.):
+4. **If unsupported language detected** (Java, Go, Ruby, C#, PHP, Rust, Swift, C++, Elixir, etc.):
 
    - Suggest cURL/raw HTTP examples from `curl/` and note that community SDKs may exist
    - Offer to show Python or TypeScript examples as reference implementations
@@ -95,7 +89,7 @@ Before reading code examples, determine which language the user is working in:
 
 ### Language-Specific Feature Support
 
-Every SDK language above supports both the beta Tool Runner and Managed Agents (beta) — Python (`@beta_tool` decorator), TypeScript (`betaZodTool` + Zod), Java (annotated classes), Go (`BetaToolRunner` in the `toolrunner` pkg), Ruby (`BaseTool` + `tool_runner`), C# (`BetaToolRunner` + raw JSON schema), PHP (`BetaRunnableTool` + `toolRunner()`); code entry points are in the Tool Use Patterns quick reference below. cURL is raw HTTP (no SDK features) and supports Managed Agents.
+Python (`@beta_tool` decorator) and TypeScript (`betaZodTool` + Zod) both support the beta Tool Runner and Managed Agents (beta); code entry points are in the Tool Use Patterns quick reference below. cURL is raw HTTP (no SDK features) and supports Managed Agents.
 
 > **Managed Agents code examples**: see the reading guide in the `## Managed Agents (Beta)` section below.
 
@@ -399,7 +393,7 @@ Availability: `shared/platform-availability.md`. For agents on Bedrock / Vertex 
 |---|---|
 | `managed-agents-onboard` | Walk the user through setting up a Managed Agent from scratch. **Read `shared/managed-agents-onboarding.md` immediately** and follow its interview script: **describe → configure the agent (propose, don't interrogate) → environment → session** (same arc as the Console quickstart, auth deferred to the session step) — defaults and inline suggestions do the work, with a silent viability gate (job vs tools/credentials/data) before any code is emitted. Do not summarize — run the interview. |
 
-**Reading guide:** Start with `shared/managed-agents-overview.md`, then the topical `shared/managed-agents-*.md` files (core, environments, tools, events, outcomes, multiagent, webhooks, memory, scheduled-deployments, client-patterns, onboarding, api-reference). For Python, TypeScript, Go, Ruby, PHP, and Java, read `{lang}/managed-agents/README.md` for code examples. For cURL, read `curl/managed-agents.md`. **Agents are persistent — create once, reference by ID.** Define agents and environments as version-controlled YAML applied with the `ant` CLI — this is the recommended flow (see `shared/anthropic-cli.md`): the CLI owns the control plane (creating and updating agents), your code owns the data plane (`sessions.create` with the stored agent ID). Call `agents.create()` in code only when you must provision programmatically; either way, store the returned agent ID and pass it to every subsequent `sessions.create`; never call `agents.create()` in the request path. If a binding you need isn't shown in the language README, WebFetch the relevant entry from `shared/live-sources.md` rather than guess. C# has beta Managed Agents support via `client.Beta.Agents` and related namespaces — see `csharp/claude-api/README.md` for details, or `curl/managed-agents.md` for raw HTTP reference.
+**Reading guide:** Start with `shared/managed-agents-overview.md`, then the topical `shared/managed-agents-*.md` files (core, environments, tools, events, outcomes, multiagent, webhooks, memory, scheduled-deployments, client-patterns, onboarding, api-reference). For Python and TypeScript, read `{lang}/managed-agents/README.md` for code examples. For cURL, read `curl/managed-agents.md`. **Agents are persistent — create once, reference by ID.** Define agents and environments as version-controlled YAML applied with the `ant` CLI — this is the recommended flow (see `shared/anthropic-cli.md`): the CLI owns the control plane (creating and updating agents), your code owns the data plane (`sessions.create` with the stored agent ID). Call `agents.create()` in code only when you must provision programmatically; either way, store the returned agent ID and pass it to every subsequent `sessions.create`; never call `agents.create()` in the request path. If a binding you need isn't shown in the language README, WebFetch the relevant entry from `shared/live-sources.md` rather than guess. Other languages (Go, Ruby, PHP, Java, C#) are not vendored here (patrz `VENDORED.md`) — use `curl/managed-agents.md` for raw HTTP reference and translate to the target SDK.
 
 **When the user wants to set up a Managed Agent from scratch** (e.g. "how do I get started", "walk me through creating one", "set up a new agent"): read `shared/managed-agents-onboarding.md` and run its interview — same flow as the `managed-agents-onboard` subcommand.
 
@@ -463,7 +457,7 @@ Server-side tools run on Anthropic's infrastructure — no client-side execution
 
 After detecting the language, read the relevant files based on what the user needs.
 
-**All SDK languages use the same multi-file layout** — directory `{lang}/claude-api/` containing `README.md` (install, client init, basic request, thinking, caching, stop details, misc), `tool-use.md` (tool definitions, agentic loop, Anthropic-defined tools, structured outputs), `streaming.md`, `batches.md`, `files-api.md`. Not every language has every file (e.g., Ruby has no `batches.md`); if a file is absent, that feature's example is not yet documented for that language — fall back to the cURL shape or WebFetch the SDK repo from `shared/live-sources.md`. **cURL** → `curl/examples.md`.
+**Python and TypeScript use the same multi-file layout** — directory `{lang}/claude-api/` containing `README.md` (install, client init, basic request, thinking, caching, stop details, misc), `tool-use.md` (tool definitions, agentic loop, Anthropic-defined tools, structured outputs), `streaming.md`, `batches.md`, `files-api.md`. If a file is absent, that feature's example is not yet documented for that language — fall back to the cURL shape or WebFetch the SDK repo from `shared/live-sources.md`. **cURL** → `curl/examples.md`. Other languages (Go, Ruby, PHP, Java, C#) are not vendored here — patrz `VENDORED.md`.
 
 The Quick Task Reference below uses the `{lang}/claude-api/FILE.md` path notation for all languages.
 
