@@ -1,2 +1,6 @@
 node_modules/
 .env
+
+# Artefakty synchronizacji CCOS - to repo jest publiczne i wylaczone z synchronizacji
+.claude/
+.mcp.json
