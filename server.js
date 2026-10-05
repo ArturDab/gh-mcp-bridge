@@ -24,6 +24,14 @@ import {
   buildCommitsQueryParams,
   buildChecksList,
   computeOverallStatus,
+  buildPrFilesResult,
+  validateCommentBody,
+  mapComment,
+  MARK_READY_MUTATION,
+  ENABLE_AUTO_MERGE_MUTATION,
+  graphqlMergeMethod,
+  unwrapGraphqlResponse,
+  requireOpenPr,
 } from "./operations.js";
 
 // Polyfill: @modelcontextprotocol/sdk oczekuje globalThis.crypto (Web Crypto),
@@ -97,6 +105,23 @@ async function gh(path, options = {}) {
   return body;
 }
 
+// Wywolanie GraphQL API GitHuba (te same dane uwierzytelniajace co REST).
+// HTTP 200 z errors[] to porazka - unwrapGraphqlResponse rzuca w takim wypadku.
+async function ghGraphql(query, variables) {
+  const data = await gh("/graphql", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query, variables }),
+  });
+  return unwrapGraphqlResponse(data);
+}
+
+// Walidacja formatu 'owner/nazwa' dla nowych narzedzi (zanim trafi do sciezki URL).
+const repoSchema = z
+  .string()
+  .regex(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/, "Format 'owner/nazwa'")
+  .describe("Format 'owner/nazwa'");
+
 function asToolResult(data) {
   return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
 }
@@ -116,7 +141,7 @@ async function defaultBranchOf(repo) {
 // --- Definicja serwera MCP i narzedzi -----------------------------------
 
 function buildServer() {
-  const server = new McpServer({ name: "gh-mcp-bridge", version: "1.1.0" });
+  const server = new McpServer({ name: "gh-mcp-bridge", version: "1.2.0" });
 
   server.registerTool(
     "list_prs",
@@ -201,6 +226,136 @@ function buildServer() {
       return asToolResult({
         overall: computeOverallStatus(checkRuns, commitStatus),
         checks: buildChecksList(checkRuns, commitStatus),
+      });
+    }
+  );
+
+  server.registerTool(
+    "get_pr_files",
+    {
+      title: "Pliki i roznice pull requesta",
+      description:
+        "Zwraca liste plikow zmienionych w PR (nazwa, status, liczba dodanych/usunietych linii) razem z diffem (pole patch) kazdego pliku - do przegladu zmiany przed scaleniem. Wynik jest stronicowany: has_more=true oznacza, ze sa kolejne strony (podaj page+1) - nie zakladaj, ze brakujacy plik nie jest w PR. Pole patch jest ucinane przy 4000 znakow (patch_truncated=true); patch_unavailable=true to plik binarny albo diff zbyt duzy dla GitHuba. Ustaw include_patch=false, zeby dostac sama liste. Tylko odczyt.",
+      inputSchema: {
+        repo: repoSchema,
+        pr_number: z.number().int().positive(),
+        page: z.number().int().min(1).default(1),
+        per_page: z.number().int().min(1).max(100).default(30),
+        include_patch: z.boolean().default(true).describe("Czy dolaczyc tresc diffa"),
+      },
+    },
+    async ({ repo, pr_number, page, per_page, include_patch }) => {
+      const params = new URLSearchParams({ per_page: String(per_page), page: String(page) });
+      const files = await gh(`/repos/${repo}/pulls/${pr_number}/files?${params.toString()}`);
+      return asToolResult(
+        buildPrFilesResult(files, { page, perPage: per_page, includePatch: include_patch })
+      );
+    }
+  );
+
+  server.registerTool(
+    "list_pr_comments",
+    {
+      title: "Komentarze pull requesta",
+      description:
+        "Listuje zwykle komentarze w rozmowie pod pull requestem (nie komentarze do konkretnych linii kodu), od najstarszych. Stronicowane: has_more=true oznacza kolejne strony. Tylko odczyt.",
+      inputSchema: {
+        repo: repoSchema,
+        pr_number: z.number().int().positive(),
+        page: z.number().int().min(1).default(1),
+        per_page: z.number().int().min(1).max(100).default(30),
+      },
+    },
+    async ({ repo, pr_number, page, per_page }) => {
+      // Najpierw pewnosc, ze to PR (a nie zwykle zgloszenie) - te same
+      // uprawnienia (Pull requests) co reszta narzedzi PR.
+      await gh(`/repos/${repo}/pulls/${pr_number}`);
+      const params = new URLSearchParams({ per_page: String(per_page), page: String(page) });
+      const comments = await gh(`/repos/${repo}/issues/${pr_number}/comments?${params.toString()}`);
+      return asToolResult({
+        page,
+        per_page,
+        count: comments.length,
+        has_more: comments.length >= per_page,
+        comments: comments.map(mapComment),
+      });
+    }
+  );
+
+  server.registerTool(
+    "add_pr_comment",
+    {
+      title: "Dodanie komentarza do pull requesta",
+      description:
+        "Dodaje zwykly komentarz w rozmowie pod pull requestem (markdown). Dziala tylko na PR-ach, nie na zwyklych zgloszeniach. Komentarz jest publiczny, jesli repo jest publiczne - nie wpisuj tu sekretow ani wewnetrznych danych. Zwraca id i adres komentarza.",
+      inputSchema: {
+        repo: repoSchema,
+        pr_number: z.number().int().positive(),
+        body: z.string().min(1).max(65536).describe("Tresc komentarza (markdown)"),
+      },
+    },
+    async ({ repo, pr_number, body }) => {
+      const text = validateCommentBody(body);
+      await gh(`/repos/${repo}/pulls/${pr_number}`); // upewnij sie, ze to PR
+      const created = await gh(`/repos/${repo}/issues/${pr_number}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body: text }),
+      });
+      return asToolResult({ id: created.id, html_url: created.html_url });
+    }
+  );
+
+  server.registerTool(
+    "mark_pr_ready",
+    {
+      title: "Zdjecie statusu roboczego (draft) z pull requesta",
+      description:
+        "Zamienia PR ze szkicu (draft) w zwykly, gotowy do przegladu i scalenia (mutacja GraphQL markPullRequestReadyForReview). Zwraca blad, jesli PR jest zamkniety albo nie jest szkicem. Nie scala PR-a.",
+      inputSchema: {
+        repo: repoSchema,
+        pr_number: z.number().int().positive(),
+      },
+    },
+    async ({ repo, pr_number }) => {
+      const pr = await gh(`/repos/${repo}/pulls/${pr_number}`);
+      const id = requireOpenPr(pr, { mustBeDraft: true });
+      const data = await ghGraphql(MARK_READY_MUTATION, { id });
+      const result = data.markPullRequestReadyForReview?.pullRequest;
+      return asToolResult({
+        number: result?.number ?? pr.number,
+        draft: result?.isDraft ?? false,
+        html_url: result?.url ?? pr.html_url,
+      });
+    }
+  );
+
+  server.registerTool(
+    "enable_auto_merge",
+    {
+      title: "Wlaczenie samoczynnego scalania PR-a",
+      description:
+        "Wlacza auto-merge (mutacja GraphQL enablePullRequestAutoMerge): GitHub sam scali PR, gdy spelnione beda wymagane warunki galezi (ochrona galezi, wymagane kontrole). Wymaga otwartego PR-a, ktory nie jest szkicem, i wlaczonej w repo opcji auto-merge - w przeciwnym razie zwraca blad GitHuba. Uwaga: gdy galaz docelowa nie ma zadnych wymaganych kontroli, GitHub moze scalic PR od razu. Domyslnie metoda squash.",
+      inputSchema: {
+        repo: repoSchema,
+        pr_number: z.number().int().positive(),
+        merge_method: z.enum(["merge", "squash", "rebase"]).default("squash"),
+      },
+    },
+    async ({ repo, pr_number, merge_method }) => {
+      const pr = await gh(`/repos/${repo}/pulls/${pr_number}`);
+      const id = requireOpenPr(pr, { mustBeDraft: false });
+      const data = await ghGraphql(ENABLE_AUTO_MERGE_MUTATION, {
+        id,
+        method: graphqlMergeMethod(merge_method),
+      });
+      const result = data.enablePullRequestAutoMerge?.pullRequest;
+      return asToolResult({
+        number: result?.number ?? pr.number,
+        auto_merge_enabled: !!result?.autoMergeRequest,
+        merge_method: result?.autoMergeRequest?.mergeMethod ?? null,
+        enabled_at: result?.autoMergeRequest?.enabledAt ?? null,
+        html_url: result?.url ?? pr.html_url,
       });
     }
   );

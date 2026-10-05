@@ -153,3 +153,135 @@ export function computeOverallStatus(checkRunsResponse, commitStatusResponse) {
 
   return "success";
 }
+
+// --- get_pr_files ------------------------------------------------------------
+
+// Limit tresci diffa (pole patch) na jeden plik. GitHub sam pomija patch dla
+// bardzo duzych albo binarnych plikow; ten limit chroni dodatkowo kontekst
+// rozmowy. Ucieta tresc jest oznaczona flaga patch_truncated - nigdy po cichu.
+export const MAX_PATCH_CHARS = 4000;
+
+// rawFile: pojedynczy wpis z GET /repos/{owner}/{repo}/pulls/{n}/files
+export function mapPrFile(rawFile, { includePatch = true, maxPatchChars = MAX_PATCH_CHARS } = {}) {
+  const out = {
+    filename: rawFile.filename,
+    status: rawFile.status,
+    additions: rawFile.additions,
+    deletions: rawFile.deletions,
+    changes: rawFile.changes,
+  };
+  if (rawFile.previous_filename) out.previous_filename = rawFile.previous_filename;
+  if (includePatch) {
+    if (typeof rawFile.patch === "string") {
+      if (rawFile.patch.length > maxPatchChars) {
+        out.patch = rawFile.patch.slice(0, maxPatchChars);
+        out.patch_truncated = true;
+      } else {
+        out.patch = rawFile.patch;
+        out.patch_truncated = false;
+      }
+    } else {
+      // Brak pola patch = plik binarny albo diff za duzy dla GitHuba.
+      out.patch = null;
+      out.patch_truncated = false;
+      out.patch_unavailable = true;
+    }
+  }
+  return out;
+}
+
+// Zwraca { page, per_page, count, has_more, files }. has_more=true znaczy, ze
+// strona byla pelna i moga istniec kolejne - wtedy trzeba poprosic o page+1,
+// a brak pliku na liscie nie jest dowodem, ze go nie ma w PR.
+export function buildPrFilesResult(rawFiles, { page = 1, perPage = 30, includePatch = true } = {}) {
+  const list = Array.isArray(rawFiles) ? rawFiles : [];
+  return {
+    page,
+    per_page: perPage,
+    count: list.length,
+    has_more: list.length >= perPage,
+    files: list.map((f) => mapPrFile(f, { includePatch })),
+  };
+}
+
+// --- komentarze --------------------------------------------------------------
+
+export const MAX_COMMENT_CHARS = 65536; // limit GitHuba dla tresci komentarza
+
+// Zwraca tresc gotowa do wyslania albo rzuca czytelny blad PRZED wywolaniem API.
+export function validateCommentBody(body) {
+  if (typeof body !== "string" || body.trim().length === 0) {
+    throw new Error("Tresc komentarza nie moze byc pusta.");
+  }
+  if (body.length > MAX_COMMENT_CHARS) {
+    throw new Error(`Komentarz za dlugi (${body.length} znakow, maksimum ${MAX_COMMENT_CHARS}).`);
+  }
+  return body;
+}
+
+export function mapComment(rawComment) {
+  return {
+    id: rawComment.id,
+    author: rawComment.user?.login || "unknown",
+    created_at: rawComment.created_at,
+    updated_at: rawComment.updated_at,
+    body: rawComment.body,
+    html_url: rawComment.html_url,
+  };
+}
+
+// --- GraphQL: gotowosc PR-a i auto-merge ------------------------------------
+
+export const MARK_READY_MUTATION = `mutation($id: ID!) {
+  markPullRequestReadyForReview(input: { pullRequestId: $id }) {
+    pullRequest { number isDraft url }
+  }
+}`;
+
+export const ENABLE_AUTO_MERGE_MUTATION = `mutation($id: ID!, $method: PullRequestMergeMethod!) {
+  enablePullRequestAutoMerge(input: { pullRequestId: $id, mergeMethod: $method }) {
+    pullRequest { number url autoMergeRequest { enabledAt mergeMethod } }
+  }
+}`;
+
+// Mapowanie nazw metod REST (merge/squash/rebase) na enum GraphQL.
+export function graphqlMergeMethod(method) {
+  const map = { merge: "MERGE", squash: "SQUASH", rebase: "REBASE" };
+  const value = map[method];
+  if (!value) {
+    throw new Error(`Nieznana metoda scalania: ${method}. Dozwolone: merge, squash, rebase.`);
+  }
+  return value;
+}
+
+// Odpowiedz GraphQL moze miec HTTP 200 i jednoczesnie errors[] - to jest porazka.
+// Zwraca data albo rzuca blad z laczonymi komunikatami.
+export function unwrapGraphqlResponse(response) {
+  if (response?.errors && response.errors.length > 0) {
+    const msg = response.errors.map((e) => e.message).join("; ");
+    throw new Error(`GitHub GraphQL: ${msg}`);
+  }
+  if (!response?.data) {
+    throw new Error("GitHub GraphQL: pusta odpowiedz.");
+  }
+  return response.data;
+}
+
+// Wspolna kontrola PR-a przed mutacja: PR musi byc otwarty. Zwraca node_id.
+export function requireOpenPr(pr, { mustBeDraft = null } = {}) {
+  if (!pr || !pr.node_id) {
+    throw new Error("Nie udalo sie odczytac node_id pull requesta.");
+  }
+  if (pr.state !== "open") {
+    throw new Error(`PR #${pr.number} nie jest otwarty (stan: ${pr.state}).`);
+  }
+  if (mustBeDraft === true && !pr.draft) {
+    throw new Error(`PR #${pr.number} nie jest szkicem (draft) - nic do zrobienia.`);
+  }
+  if (mustBeDraft === false && pr.draft) {
+    throw new Error(
+      `PR #${pr.number} jest szkicem (draft). Najpierw zdejmij status roboczy (mark_pr_ready).`
+    );
+  }
+  return pr.node_id;
+}
