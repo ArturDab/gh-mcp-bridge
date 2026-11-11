@@ -20,6 +20,7 @@ npm start
 | `list_repos`, `get_repo`, `update_repo` | repozytoria instalacji i ich podstawowe ustawienia |
 | `list_branches`, `create_branch`, `delete_branch` | galezie |
 | `list_files`, `get_file`, `put_file`, `delete_file`, `list_commits` | pliki i historia |
+| `edit_file` | zmiana fragmentu pliku: zamiana dokladnego tekstu (odmowa przy 0 albo >1 dopasowaniu), kilka zamian w jednym commicie |
 | `list_prs`, `get_pr`, `create_pr`, `close_pr`, `merge_pr` | pull requesty |
 | `get_pr_checks` | stan kontroli CI pull requesta |
 | `get_pr_files` | pliki i roznice (diff) pull requesta, stronicowane |
