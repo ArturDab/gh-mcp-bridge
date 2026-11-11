@@ -33,6 +33,7 @@ import {
   unwrapGraphqlResponse,
   requireOpenPr,
 } from "./operations.js";
+import { applyEdits, decodeContentsFile, MAX_EDITS } from "./edit_file.js";
 
 // Polyfill: @modelcontextprotocol/sdk oczekuje globalThis.crypto (Web Crypto),
 // ktore na starszych wersjach Node nie jest globalne bez flagi.
@@ -141,7 +142,7 @@ async function defaultBranchOf(repo) {
 // --- Definicja serwera MCP i narzedzi -----------------------------------
 
 function buildServer() {
-  const server = new McpServer({ name: "gh-mcp-bridge", version: "1.2.0" });
+  const server = new McpServer({ name: "gh-mcp-bridge", version: "1.3.0" });
 
   server.registerTool(
     "list_prs",
@@ -480,6 +481,71 @@ function buildServer() {
         body: JSON.stringify(body),
       });
       return asToolResult({ commit: result.commit?.sha, path: result.content?.path });
+    }
+  );
+
+  server.registerTool(
+    "edit_file",
+    {
+      title: "Edycja fragmentu pliku w repo",
+      description:
+        "Zmienia fragment istniejacego pliku tekstowego bez przepisywania calosci: zamienia dokladny tekst old_str na new_str. Kazde old_str musi wystapic w pliku dokladnie raz - przy 0 albo wiecej niz 1 dopasowaniu narzedzie odmawia i nic nie zapisuje (rozszerz old_str o sasiedni tekst). Kilka zamian (edits) stosuje po kolei i zapisuje jednym commitem; blad w ktorejkolwiek = nic nie zapisane. Pusty new_str usuwa fragment. Zapis jest warunkowy (sha) - jesli plik zmienil sie w miedzyczasie, GitHub odrzuci zapis (409) i trzeba sprobowac ponownie. Branch jest wymagany i musi istniec (create_branch). Nowy plik - put_file.",
+      inputSchema: {
+        repo: repoSchema,
+        path: z.string().min(1).describe("Sciezka do istniejacego pliku w repo"),
+        branch: z.string().min(1).describe("Branch docelowy (wymagany), np. claude/poprawka-x"),
+        message: z.string().min(1).describe("Tresc commita"),
+        edits: z
+          .array(
+            z.object({
+              old_str: z.string().min(1).describe("Dokladny tekst do zamiany; musi wystapic w pliku dokladnie raz"),
+              new_str: z.string().describe("Nowy tekst (pusty usuwa fragment)"),
+            })
+          )
+          .min(1)
+          .max(MAX_EDITS)
+          .describe("Lista zamian stosowanych po kolei, jeden commit"),
+      },
+    },
+    async ({ repo, path, branch, message, edits }) => {
+      const params = `?ref=${encodeURIComponent(branch)}`;
+      let existing;
+      try {
+        existing = await gh(`/repos/${repo}/contents/${path}${params}`);
+      } catch (err) {
+        if (String(err.message).includes("404")) {
+          existing = null;
+        } else {
+          throw err;
+        }
+      }
+      let blob = null;
+      if (
+        existing &&
+        !Array.isArray(existing) &&
+        existing.sha &&
+        existing.encoding !== "base64"
+      ) {
+        blob = await gh(`/repos/${repo}/git/blobs/${existing.sha}`);
+      }
+      const { sha, text } = decodeContentsFile(path, existing, blob);
+      const updated = applyEdits(text, edits, path);
+      const result = await gh(`/repos/${repo}/contents/${path}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message,
+          content: Buffer.from(updated, "utf-8").toString("base64"),
+          branch,
+          sha,
+        }),
+      });
+      return asToolResult({
+        commit: result.commit?.sha,
+        path: result.content?.path,
+        branch,
+        edits_applied: edits.length,
+      });
     }
   );
 
